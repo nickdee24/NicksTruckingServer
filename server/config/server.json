@@ -1,0 +1,7 @@
+{
+  "lobbyName": "Nick's Trucking Server",
+  "description": "Private test server",
+  "welcome": "Welcome to Nick's Trucking Server. Drive safe!",
+  "dataRoot": "D:\\TruckingServerData",
+  "gameDocs": "%USERPROFILE%\\Documents\\Euro Truck Simulator 2"
+}

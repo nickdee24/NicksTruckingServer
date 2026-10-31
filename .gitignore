@@ -1,0 +1,8 @@
+node_modules/
+dist/
+out/
+*.log
+.env
+server/runtime/
+server/config/server_packages.*
+mods/pack/*.scs
