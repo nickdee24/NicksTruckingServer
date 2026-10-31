@@ -6,7 +6,7 @@ Everything big lives in `D:\TruckingServerData`:
 | --- | --- |
 | `steamcmd\` | Valve's SteamCMD |
 | `ets2ds\` | ETS2 Dedicated Server (Steam app 1948160) |
-| `home\` | The server's home folder: `server_config.sii`, `server_packages.*`, logs |
+| `home\Euro Truck Simulator 2\` | The server's files: `server_config.sii`, `server_packages.*`, `server.log.txt` |
 | `server_password.txt` | The lobby password (not in git) |
 
 ## One-time step in the game
@@ -29,4 +29,4 @@ The server needs to know your map, DLC and mods. Export them from the game:
 ## Joining
 
 In ETS2, choose Convoy, then Search, find "Nick's Trucking Server" and enter the password from `server_password.txt`.
-The server is hidden from the public list (`show_server: false`), so use the search box.
+The server is hidden from the public list (`show_server: false`), so use the search box. You can also paste the session search id that `server.log.txt` prints when the server starts.

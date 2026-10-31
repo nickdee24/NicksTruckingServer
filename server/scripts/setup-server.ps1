@@ -3,7 +3,9 @@
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $cfg = Get-Content "$repo\server\config\server.json" -Raw | ConvertFrom-Json
-$home_ = Join-Path $cfg.dataRoot 'home'
+# The server is started with -homedir <dataRoot>\home and keeps its files in a
+# "Euro Truck Simulator 2" folder inside it, just like the game does in Documents.
+$home_ = Join-Path $cfg.dataRoot 'home\Euro Truck Simulator 2'
 $gameDocs = [Environment]::ExpandEnvironmentVariables($cfg.gameDocs)
 New-Item -ItemType Directory -Force $home_ | Out-Null
 
