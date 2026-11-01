@@ -10,6 +10,7 @@ const DEFAULTS = {
   hubUrl: 'http://localhost:7420',
   telemetryPort: 7421,
   overlayHotkey: 'F8',
+  dashTruckUrl: 'http://localhost:27766/',
   lastServer: 'main',
   playIntro: true
 };

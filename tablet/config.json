@@ -1,5 +1,6 @@
 {
   "playerName": "Nick",
+  "dashTruckUrl": "http://localhost:27766/",
   "brand": {
     "name": "Nick's Trucking",
     "short": "NTS"
@@ -26,6 +27,7 @@
     { "id": "chat", "label": "Chat", "tint": "#58a6ff" },
     { "id": "traffic", "label": "Traffic", "tint": "#f85149" },
     { "id": "map", "label": "Map", "tint": "#2dd4bf" },
-    { "id": "news", "label": "News", "tint": "#bc8cff" }
+    { "id": "news", "label": "News", "tint": "#bc8cff" },
+    { "id": "dashtruck", "label": "DashTruck", "tint": "#e6edf3" }
   ]
 }
