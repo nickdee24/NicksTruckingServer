@@ -7,9 +7,9 @@
       "lobbyName": "Nick's Trucking - Main",
       "description": "The main server",
       "welcome": "Welcome to the Main server. Drive safe!",
-      "tagline": "Everyday driving, full traffic",
+      "tagline": "Everyday driving",
       "maxPlayers": 8,
-      "traffic": true,
+      "traffic": false,
       "playerDamage": true,
       "forceSpeedLimiter": false,
       "portOffset": 0
