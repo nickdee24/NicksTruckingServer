@@ -19,6 +19,19 @@
     </section>
 
     <section class="card">
+      <h2>In-game announcement</h2>
+      <form id="announce-form">
+        <div class="row">
+          <input name="title" placeholder="Title (defaults to the server name)" maxlength="80">
+          <select name="style"><option value="info">Info</option><option value="warning">Warning</option><option value="event">Event</option></select>
+          <input name="seconds" type="number" min="3" max="120" value="10" title="Seconds on screen">
+        </div>
+        <input name="text" placeholder="Shown at the top centre of every driver's screen" required maxlength="300">
+        <button>Send to all drivers</button>
+      </form>
+    </section>
+
+    <section class="card">
       <h2>Post news</h2>
       <form id="news-form">
         <div class="row">
@@ -26,6 +39,7 @@
           <select name="tag"><option>News</option><option>Announcement</option><option>Event</option><option>Update</option><option>Server</option></select>
         </div>
         <textarea name="body" placeholder="What's happening?" required rows="3"></textarea>
+        <label class="muted small"><input type="checkbox" name="announce" checked> Also show the headline in-game</label>
         <button>Post</button>
       </form>
       <ul class="list" id="news"></ul>

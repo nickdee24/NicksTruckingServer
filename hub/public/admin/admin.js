@@ -83,8 +83,20 @@ $('news-form').onsubmit = async e => {
   const f = e.target;
   try {
     await api('/api/admin/news', { method: 'POST', body: { title: f.title.value, tag: f.tag.value, body: f.body.value } });
+    if (f.announce.checked) {
+      await api('/api/admin/announce', { method: 'POST', body: { title: f.tag.value, text: f.title.value, seconds: 10, style: f.tag.value === 'Event' ? 'event' : 'info' } });
+    }
     f.reset();
     loadNews();
+  } catch (err) { alert(err.message); }
+};
+
+$('announce-form').onsubmit = async e => {
+  e.preventDefault();
+  const f = e.target;
+  try {
+    await api('/api/admin/announce', { method: 'POST', body: { title: f.title.value, text: f.text.value, seconds: f.seconds.value, style: f.style.value } });
+    f.text.value = '';
   } catch (err) { alert(err.message); }
 };
 

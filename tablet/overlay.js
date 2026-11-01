@@ -68,6 +68,21 @@ hub.on('chat', m => addLine($('chat'), '<b data-t></b> <span data-t></span>', [m
 hub.on('cb', m => addLine($('cb'), '<b data-t></b> <small data-t></small> <span data-t></span>',
   [m.from, m.distance ? `${(m.distance / 1000).toFixed(1)} km` : time(m.ts), m.text]));
 
+// Server announcements: a banner at the top centre that slides away after its time is up.
+hub.on('announcement', a => {
+  const el = document.createElement('div');
+  el.className = `announcement ${a.style}`;
+  el.innerHTML = '<span class="mark"></span><div><h3></h3><p></p></div>';
+  el.querySelector('.mark').textContent = config.brand.short;
+  el.querySelector('h3').textContent = a.title;
+  el.querySelector('p').textContent = a.text;
+  $('announcements').append(el);
+  setTimeout(() => {
+    el.classList.add('leaving');
+    el.addEventListener('animationend', () => el.remove(), { once: true });
+  }, a.seconds * 1000);
+});
+
 hub.on('players', ({ players, cbChannel }) => {
   $('cb-ch').textContent = `· CH ${cbChannel}`;
   const near = players.filter(p => p.distance !== null && p.distance <= 5000);

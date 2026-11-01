@@ -88,6 +88,18 @@ app.post('/api/admin/news', localOnly, (req, res) => {
   broadcast({ type: 'news', item });
   res.json(item);
 });
+// In-game announcement: a banner at the top centre of every driver's overlay.
+app.post('/api/admin/announce', localOnly, (req, res) => {
+  const { title, text, seconds, style } = req.body ?? {};
+  if (!text) return res.status(400).json({ error: 'Need some text' });
+  const announcement = {
+    type: 'announcement', title: String(title || settings.serverName).slice(0, 80), text: String(text).slice(0, 300),
+    seconds: Math.min(120, Math.max(3, Number(seconds) || 10)), style: ['info', 'warning', 'event'].includes(style) ? style : 'info',
+    ts: Date.now()
+  };
+  broadcast(announcement);
+  res.json(announcement);
+});
 app.delete('/api/admin/news/:id', localOnly, (req, res) => {
   const news = readJson('news.json').filter(n => n.id !== req.params.id);
   writeFileSync(path.join(dataDir, 'news.json'), JSON.stringify(news, null, 2));
