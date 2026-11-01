@@ -43,9 +43,19 @@ static class TileExport
         var gameDir = args[0];
         var outDir = args[1];
         var maxZoom = args.Length > 2 ? int.Parse(args[2]) : 7;
+        // Optional 4th argument: a text file listing map mods (one .scs/.zip path per line, highest priority first).
+        var mods = new List<Mod>();
+        if (args.Length > 3)
+        {
+            foreach (var line in File.ReadAllLines(args[3]))
+            {
+                if (line.Trim().Length == 0) continue;
+                mods.Add(new Mod(line.Trim()) { Load = true });
+            }
+        }
 
-        Console.WriteLine("Reading game files…");
-        var mapper = new TsMapper(gameDir, new List<Mod>());
+        Console.WriteLine("Reading game files and {0} mod file(s)…", mods.Count);
+        var mapper = new TsMapper(gameDir, mods);
         mapper.Parse();
         var renderer = new TsMapRenderer(mapper);
         var palette = new DarkPalette();

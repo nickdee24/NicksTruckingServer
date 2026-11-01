@@ -1,7 +1,8 @@
 {
   "name": "Nick's Trucking mod pack",
-  "version": "1",
+  "version": "2",
   "mods": {
-    "example_mod.scs": { "title": "Shown in the launcher instead of the file name", "description": "Optional notes about the mod" }
+    "windscreen_hud_v1_7.scs": { "title": "Windscreen HUD v1.7 (Waze route + speed)" },
+    "waze_161_fix_v1.8.scs": { "title": "Waze 1.61 Fix (2026 colours + DAF 2025 + Volvo FH6)" }
   }
 }

@@ -108,7 +108,17 @@ function localOnly(req, res, next) {
 }
 
 app.get('/api/incidents', (_req, res) => res.json({ types: INCIDENT_TYPES, items: traffic.list() }));
-app.get('/api/roads', (_req, res) => res.json(roads.get()));
+// Driven roads, plus every city: from the rendered map's Cities.json when there is one,
+// otherwise only the cities learned from your jobs.
+const citiesFile = path.join(here, '..', 'public', 'map', 'tiles', 'Cities.json');
+let mapCities = null;
+app.get('/api/roads', (_req, res) => {
+  const data = roads.get();
+  if (!mapCities && existsSync(citiesFile)) {
+    mapCities = Object.fromEntries(JSON.parse(readFileSync(citiesFile, 'utf8')).map(c => [c.Name, [Math.round(c.X), Math.round(c.Y)]]));
+  }
+  res.json({ lines: data.lines, cities: { ...data.cities, ...(mapCities ?? {}) } });
+});
 app.post('/api/admin/incidents', localOnly, (req, res) => {
   const { type, x, z, note, minutes } = req.body ?? {};
   const added = traffic.add({ type, x: Number(x), z: Number(z), note, minutes: minutes === undefined ? undefined : Number(minutes), source: 'admin' });

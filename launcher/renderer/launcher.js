@@ -186,7 +186,7 @@ $('play-btn').onclick = async () => {
   try {
     const result = await L.play(server.id);
     status.textContent = result.modsActivated
-      ? 'Game starting. New mods were installed: enable the "nts_" mods once in the Mod Manager.'
+      ? 'Game starting. New mods were installed: enable them once in the Mod Manager.'
       : 'Game starting. Have a good drive!';
     showJoin(server);
     gameRunning = true;

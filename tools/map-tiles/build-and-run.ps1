@@ -1,6 +1,6 @@
 # Builds ts-map and TileExport, then renders the map background into hub/public/map/tiles.
-#   build-and-run.ps1 [-MaxZoom 7]
-param([int]$MaxZoom = 7)
+#   build-and-run.ps1 [-MaxZoom 8]
+param([int]$MaxZoom = 8)
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $tools = 'D:\TruckingServerData\tools'
@@ -22,6 +22,9 @@ $bin = Join-Path $tsmap 'TsMap\bin\x64\Release'
 $exe = Join-Path $bin 'TileExport.exe'
 & $csc /nologo /platform:x64 /optimize /out:$exe /r:"$bin\TsMap.dll" /r:System.Drawing.dll "$PSScriptRoot\TileExport.cs" | Out-Host
 
-$game = (Get-Content "$repo\server\config\server.json" -Raw | ConvertFrom-Json) | Out-Null
 $gameDir = 'D:\SteamLibrary\steamapps\common\Euro Truck Simulator 2'
-& $exe $gameDir "$repo\hub\public\map\tiles" $MaxZoom
+# map-mods.txt lists the map mods to draw (ProMods). Edit it if your mods change.
+Copy-Item $exe (Join-Path $tsmap 'TsMap.Canvas\bin\x64\Release') -Force
+Push-Location (Join-Path $tsmap 'TsMap.Canvas\bin\x64\Release')
+& .\TileExport.exe $gameDir "$repo\hub\public\map\tiles" $MaxZoom "$PSScriptRoot\map-mods.txt"
+Pop-Location
