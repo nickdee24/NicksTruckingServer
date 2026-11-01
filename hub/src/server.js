@@ -1,6 +1,6 @@
 import express from 'express';
 import { createServer } from 'node:http';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { createSocket } from 'node:dgram';
@@ -34,8 +34,11 @@ app.use('/map', express.static(path.join(here, '..', 'public', 'map')));
 app.use('/admin', express.static(path.join(here, '..', 'public', 'admin')));
 // Images for news posts: put them in hub/public/media and set "image": "/media/file.jpg" on the post.
 app.use('/media', express.static(path.join(here, '..', 'public', 'media')));
-// Map background tiles, if set up in settings.json ("mapTiles").
-app.get('/api/map', (_req, res) => res.json({ tiles: settings.mapTiles ?? null }));
+// Map background tiles, rendered by tools/map-tiles into hub/public/map/tiles.
+app.get('/api/map', (_req, res) => {
+  const info = path.join(here, '..', 'public', 'map', 'tiles', 'tiles.json');
+  res.json({ tiles: existsSync(info) ? { url: '/map/tiles/{z}/{x}/{y}.png', ...JSON.parse(readFileSync(info, 'utf8')) } : null });
+});
 app.get('/api/modpack', async (_req, res, next) => {
   try { res.json(await modpack.manifest()); } catch (err) { next(err); }
 });
@@ -181,6 +184,8 @@ udp.on('message', raw => {
     from: msg.from || undefined, to: msg.to || undefined, fuel: Number(msg.fuel), lastTelemetry: Date.now()
   });
   zones.watchFuel(telemetry.get(name.toLowerCase()));
+  // Every packet (4 a second), so driven roads follow curves closely.
+  roads.record(telemetry.get(name.toLowerCase()));
   // Keep simulated drivers around the real truck (route centre is about 3 km E, 4 km S of start).
   sim?.followPlayer(Number(msg.x), Number(msg.z));
 });

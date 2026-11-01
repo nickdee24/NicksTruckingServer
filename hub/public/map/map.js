@@ -26,9 +26,21 @@ if (config) {
 }
 $('follow-name').textContent = me || 'me';
 
-const map = L.map('map', { crs: L.CRS.Simple, minZoom: -9, maxZoom: 2, zoomSnap: 0.5, attributionControl: false, zoomControl: false });
+// With a rendered background, zoom level 0 is the whole map in one 256 px tile (see tools/map-tiles).
+// Without one, a plain metre grid is used.
+const mapInfo = await fetch('/api/map').then(r => r.json()).catch(() => ({}));
+const tiles = mapInfo.tiles;
+let crs = L.CRS.Simple;
+if (tiles) {
+  const s = tiles.tileSize / (tiles.x2 - tiles.x1); // pixels per metre at zoom 0
+  crs = L.extend({}, L.CRS.Simple, { transformation: new L.Transformation(s, -tiles.x1 * s, -s, -tiles.y1 * s) });
+}
+const map = L.map('map', {
+  crs, zoomSnap: 0.5, attributionControl: false, zoomControl: false,
+  minZoom: tiles ? 1 : -9, maxZoom: tiles ? tiles.maxZoom + 3 : 2
+});
 L.control.zoom({ position: 'topright' }).addTo(map);
-map.setView(ll(0, 0), -2);
+map.setView(ll(0, 0), tiles ? tiles.maxZoom - 2 : -2);
 
 const layers = {
   roads: L.layerGroup().addTo(map),
@@ -38,10 +50,9 @@ const layers = {
   drivers: L.layerGroup().addTo(map)
 };
 
-// A rendered map background, if one has been set up (see docs). Otherwise roads are drawn as you drive.
-const mapInfo = await fetch('/api/map').then(r => r.json()).catch(() => ({}));
-if (mapInfo.tiles) {
-  L.tileLayer(mapInfo.tiles.url, { ...mapInfo.tiles.options, noWrap: true }).addTo(map);
+// The rendered background shows every road in dark grey; roads you've driven are drawn over it in orange.
+if (tiles) {
+  L.tileLayer(tiles.url, { minZoom: 0, maxNativeZoom: tiles.maxZoom, maxZoom: tiles.maxZoom + 3, noWrap: true, tileSize: tiles.tileSize }).addTo(map).bringToBack();
 } else {
   $('empty-note').hidden = false;
 }
@@ -58,13 +69,13 @@ async function loadRoads() {
   const { lines, cities } = await fetch('/api/roads').then(r => r.json());
   layers.roads.clearLayers();
   for (const line of lines) {
-    if (line.length > 1) L.polyline(line.map(([x, z]) => ll(x, z)), { color: '#4a5260', weight: 4, opacity: .95 }).addTo(layers.roads);
+    if (line.length > 1) L.polyline(line.map(([x, z]) => ll(x, z)), { color: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#f2a33a', weight: 3, opacity: .95 }).addTo(layers.roads);
   }
   layers.cities.clearLayers();
   for (const [name, [x, z]] of Object.entries(cities)) {
     L.marker(ll(x, z), { icon: L.divIcon({ className: 'city-label', html: '', iconAnchor: [0, 6] }) }).addTo(layers.cities).getElement()?.append(name);
   }
-  if (!lines.length && !mapInfo.tiles) $('empty-note').hidden = false;
+  if (!lines.length && !tiles) $('empty-note').hidden = false;
 }
 
 async function loadZones() {

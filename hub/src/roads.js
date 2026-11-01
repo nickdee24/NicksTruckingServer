@@ -2,9 +2,9 @@
 // has roads to draw without needing any map data taken from the game.
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 
-const MIN_STEP_M = 40;      // record a point every 40 m of travel
+const MIN_STEP_M = 15;      // record a point every 15 m of travel, so curves stay on the road
 const GAP_M = 400;          // a jump bigger than this (ferry, teleport, load) starts a new line
-const GRID_M = 25;          // points closer than this to an existing one are not stored again
+const GRID_M = 10;          // points closer than this to an existing one are not stored again
 
 export function createRoads({ file }) {
   const data = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : { lines: [], cities: {} };
