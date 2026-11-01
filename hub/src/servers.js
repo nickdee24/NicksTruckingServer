@@ -29,6 +29,9 @@ export function createServerStatus(repoRoot) {
 
   return function list() {
     const cfg = JSON.parse(readFileSync(configPath, 'utf8'));
+    // The lobby password lives outside the repo; the launcher shows it so drivers can join.
+    const passwordFile = path.join(cfg.dataRoot, 'server_password.txt');
+    const password = existsSync(passwordFile) ? readFileSync(passwordFile, 'utf8').trim() : null;
     return cfg.servers.map(s => {
       const root = path.join(cfg.dataRoot, 'servers', s.id);
       const online = isRunning(path.join(root, 'server.pid'));
@@ -43,6 +46,7 @@ export function createServerStatus(repoRoot) {
         playerDamage: s.playerDamage,
         speedLimiter: s.forceSpeedLimiter,
         online,
+        password,
         ...log
       };
     });

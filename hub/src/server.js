@@ -7,12 +7,14 @@ import { createSocket } from 'node:dgram';
 import { WebSocketServer } from 'ws';
 import { createSimulation } from './sim.js';
 import { createServerStatus } from './servers.js';
+import { createModpack } from './modpack.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const dataDir = path.join(here, '..', 'data');
 const repoRoot = path.join(here, '..', '..');
 const tabletDir = path.join(repoRoot, 'tablet');
 const serverStatus = createServerStatus(repoRoot);
+const modpack = createModpack(repoRoot);
 const readJson = file => JSON.parse(readFileSync(path.join(dataDir, file), 'utf8'));
 
 const settings = readJson('settings.json');
@@ -21,7 +23,13 @@ const TELEMETRY_TIMEOUT_MS = 5000;
 
 const app = express();
 app.use(express.json());
+// The launcher loads pages from file://, so allow cross-origin reads.
+app.use((_req, res, next) => { res.set('Access-Control-Allow-Origin', '*'); next(); });
 app.use('/tablet', express.static(tabletDir));
+app.use('/mods', express.static(modpack.packDir));
+app.get('/api/modpack', async (_req, res, next) => {
+  try { res.json(await modpack.manifest()); } catch (err) { next(err); }
+});
 app.get('/', (_req, res) => res.redirect('/tablet/'));
 app.get('/api/news', (_req, res) => res.json(readJson('news.json')));
 app.get('/api/servers', (_req, res) => res.json(serverStatus()));

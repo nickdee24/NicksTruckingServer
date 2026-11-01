@@ -1,0 +1,17 @@
+{
+  "name": "trucking-launcher",
+  "productName": "Nick's Trucking Launcher",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Launcher and in-game overlay for Nick's Trucking Server",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^33.2.1"
+  },
+  "allowScripts": {
+    "electron@33.4.11": true
+  }
+}

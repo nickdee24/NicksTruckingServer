@@ -16,6 +16,8 @@ body {
   background: #0a0c10;
 }
 
+body.embedded { padding: 0; background: transparent; }
+
 /* Device frame */
 .tablet {
   position: relative;

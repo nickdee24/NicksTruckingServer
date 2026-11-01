@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src *; img-src * data:; media-src 'self' file:; style-src 'self' 'unsafe-inline'">
+  <title>Trucking Launcher</title>
+  <link rel="stylesheet" href="launcher.css">
+</head>
+<body>
+  <!-- Intro: plays assets/intro.mp4 if it exists, otherwise the animated logo. Click to skip. -->
+  <div class="intro" id="intro">
+    <video id="intro-video" muted playsinline hidden></video>
+    <div class="intro-logo" id="intro-logo">
+      <div class="intro-mark" id="intro-mark"></div>
+      <div class="intro-name" id="intro-name"></div>
+      <div class="intro-line"></div>
+      <div class="intro-status" id="intro-status">Starting up…</div>
+    </div>
+    <span class="intro-skip">Click to skip</span>
+  </div>
+
+  <header class="titlebar">
+    <span class="mark" id="mark"></span>
+    <span class="title" id="title"></span>
+    <span class="hub-state" id="hub-state"></span>
+    <button class="win-btn" id="settings-btn" title="Settings">⚙</button>
+    <button class="win-btn" id="min-btn" title="Minimise">—</button>
+    <button class="win-btn close" id="close-btn" title="Close">✕</button>
+  </header>
+
+  <main class="layout">
+    <section class="servers">
+      <h2>Choose a server</h2>
+      <div class="server-list" id="server-list"></div>
+
+      <div class="play-row">
+        <button class="play" id="play-btn" disabled>Play</button>
+        <div class="play-status" id="play-status"></div>
+      </div>
+
+      <div class="join card" id="join" hidden>
+        <div>
+          <h3>Join <span id="join-name"></span></h3>
+          <p class="muted">In the game, open <strong>Convoy → Search</strong>, paste the session id and enter the password. Press <kbd id="hotkey"></kbd> any time to open your tablet.</p>
+        </div>
+        <div class="join-fields">
+          <label>Session id <button class="copy" id="copy-id"></button></label>
+          <label>Password <button class="copy" id="copy-pass"></button></label>
+        </div>
+      </div>
+    </section>
+
+    <aside class="side">
+      <h2>News</h2>
+      <ul class="news" id="news"></ul>
+      <h2>Tools</h2>
+      <div class="tools">
+        <button class="tool" data-open="/map/">Live map</button>
+        <button class="tool" data-open="/tablet/">Tablet</button>
+        <button class="tool" data-open="/admin/">Admin</button>
+        <button class="tool" id="dashtruck-btn">DashTruck</button>
+      </div>
+    </aside>
+  </main>
+
+  <dialog id="settings">
+    <form method="dialog" id="settings-form">
+      <h2>Settings</h2>
+      <label>Driver name <input name="playerName" required maxlength="32"></label>
+      <label>Hub address <input name="hubUrl" required></label>
+      <label>Tablet hotkey <input name="overlayHotkey" required placeholder="F8"></label>
+      <label>DashTruck address <input name="dashTruckUrl" placeholder="http://localhost:…"></label>
+      <label class="check"><input type="checkbox" name="playIntro"> Play the intro when the launcher opens</label>
+      <div class="dialog-actions">
+        <button value="cancel" formnovalidate>Cancel</button>
+        <button value="save" class="primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="launcher.js"></script>
+</body>
+</html>

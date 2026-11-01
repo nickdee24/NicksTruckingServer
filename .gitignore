@@ -5,5 +5,5 @@ out/
 .env
 server/runtime/
 server/config/server_packages.*
-mods/pack/*.scs
+mods/pack/*
 telemetry-plugin/build/

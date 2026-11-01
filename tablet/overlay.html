@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Overlay</title>
+  <link rel="stylesheet" href="overlay.css">
+</head>
+<body>
+  <!-- HUD widgets stay on screen while driving. With the tablet open you can drag them anywhere. -->
+  <div class="widget" id="w-nearby" data-widget="nearby">
+    <div class="grip">Nearby</div>
+    <div class="body" id="nearby"></div>
+  </div>
+  <div class="widget" id="w-chat" data-widget="chat">
+    <div class="grip">Chat</div>
+    <ul class="feed" id="chat"></ul>
+  </div>
+  <div class="widget" id="w-cb" data-widget="cb">
+    <div class="grip">CB <span id="cb-ch"></span></div>
+    <ul class="feed" id="cb"></ul>
+  </div>
+
+  <div class="tablet-wrap" id="tablet-wrap" hidden>
+    <iframe id="tablet" title="Tablet"></iframe>
+    <p class="hint">Drag the HUD boxes to move them · Esc or your hotkey closes the tablet</p>
+  </div>
+
+  <script type="module" src="overlay.js"></script>
+</body>
+</html>

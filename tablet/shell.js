@@ -2,6 +2,10 @@ import { connectHub } from './hub.js';
 
 const $ = id => document.getElementById(id);
 const config = await (await fetch('config.json')).json();
+const params = new URLSearchParams(location.search);
+if (params.get('name')) config.playerName = params.get('name');
+// Inside the in-game overlay the page background must stay see-through.
+if (params.has('embedded')) document.body.classList.add('embedded');
 
 // Theme: each key in config.theme becomes a CSS variable (frameEdge -> --frame-edge).
 for (const [key, value] of Object.entries(config.theme)) {

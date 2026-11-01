@@ -1,0 +1,7 @@
+{
+  "name": "Nick's Trucking mod pack",
+  "version": "1",
+  "mods": {
+    "example_mod.scs": { "title": "Shown in the launcher instead of the file name", "description": "Optional notes about the mod" }
+  }
+}

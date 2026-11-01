@@ -1,0 +1,54 @@
+/* Overlay over the game: the page itself is fully transparent. */
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  font-family: var(--font, 'Segoe UI', system-ui, sans-serif);
+  color: var(--text, #e6edf3);
+}
+
+.widget {
+  position: absolute;
+  width: 320px;
+  border-radius: 10px;
+  background: rgba(13, 17, 23, .62);
+  backdrop-filter: blur(6px);
+  font-size: 13px;
+  text-shadow: 0 1px 2px #000;
+}
+.widget[hidden] { display: none; }
+.grip {
+  padding: 6px 10px;
+  border-radius: 10px 10px 0 0;
+  background: rgba(0, 0, 0, .35);
+  color: var(--accent, #f2a33a);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+body.editing .grip { cursor: move; outline: 1px dashed var(--accent, #f2a33a); }
+.body { padding: 8px 10px; }
+.feed { margin: 0; padding: 6px 10px 8px; list-style: none; }
+.feed li { padding: 2px 0; line-height: 1.35; animation: fade 20s forwards; }
+.feed b { color: var(--accent, #f2a33a); font-weight: 600; }
+.feed small { color: var(--text-muted, #8b96a3); }
+body.editing .feed li { animation: none; }
+@keyframes fade { 0%, 80% { opacity: 1; } 100% { opacity: .25; } }
+
+.tablet-wrap {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, .35);
+}
+.tablet-wrap[hidden] { display: none; }
+.tablet-wrap iframe {
+  width: min(1000px, 80vw);
+  height: min(700px, 80vh);
+  border: 0;
+  background: transparent;
+}
+.hint { position: absolute; bottom: 24px; margin: 0; color: #fff; font-size: 13px; text-shadow: 0 1px 3px #000; }
