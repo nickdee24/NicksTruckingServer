@@ -11,6 +11,9 @@ const DEFAULTS = {
   telemetryPort: 7421,
   overlayHotkey: 'F8',
   dashTruckUrl: 'http://localhost:27766/',
+  // Added after -nointro. -unlimitedlog keeps the whole game.log.txt for troubleshooting;
+  // add -rdevice dx11 to force DirectX 11.
+  gameArgs: '-unlimitedlog',
   lastServer: 'main',
   playIntro: true
 };
@@ -134,7 +137,7 @@ async function play(serverId) {
     progress('launch', 'The game is already running');
   } else {
     progress('launch', 'Starting the game…');
-    game.launchGame(gameDir);
+    game.launchGame(gameDir, settings.gameArgs.split(/\s+/).filter(Boolean));
   }
   createOverlay();
   watchGame();
