@@ -8,23 +8,46 @@
   <link rel="stylesheet" href="map.css">
 </head>
 <body>
-  <aside class="panel">
-    <header>
-      <span class="mark" id="mark"></span>
-      <div>
-        <h1 id="title">Live map</h1>
-        <p class="muted" id="summary">Connecting…</p>
-      </div>
-    </header>
-    <label class="toggle"><input type="checkbox" id="follow" checked> Follow <span id="follow-name"></span></label>
-    <label class="toggle"><input type="checkbox" id="show-bots" checked> Show simulated drivers</label>
-    <h2>Traffic</h2>
-    <ul class="list" id="incidents"></ul>
-    <h2>Drivers</h2>
-    <ul class="list" id="drivers"></ul>
-    <p class="muted note">Roads appear as you drive them. City names are added when you pick up or deliver a job.</p>
+  <aside class="panel" id="panel">
+    <label class="search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+      <input id="search" placeholder="Search players or places" autocomplete="off">
+    </label>
+    <div class="server-tabs" id="server-tabs"></div>
+    <div class="tabs">
+      <button class="tab active" data-tab="players">Players</button>
+      <button class="tab" data-tab="incidents">Road incidents</button>
+    </div>
+    <div class="list-head"><span id="list-title">Players online</span><span id="list-count"></span></div>
+    <ul class="list" id="list"></ul>
   </aside>
-  <div id="map"></div>
+
+  <section class="map-wrap">
+    <div id="map"></div>
+    <div class="toolbar">
+      <button class="tool-btn" id="overview"><svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Overview</button>
+      <div class="layers-wrap">
+        <button class="tool-btn" id="layers-btn"><svg viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/></svg>Map layers</button>
+        <div class="layers" id="layers" hidden>
+          <label><input type="checkbox" data-layer="drivers" checked> Players</label>
+          <label><input type="checkbox" data-layer="bots" checked> Simulated drivers</label>
+          <label><input type="checkbox" data-layer="incidents" checked> Road incidents</label>
+          <label><input type="checkbox" data-layer="zones"> Zones (truck stops, depots)</label>
+          <label><input type="checkbox" data-layer="roads" checked> Driven roads</label>
+          <label><input type="checkbox" data-layer="cities" checked> Cities</label>
+          <label><input type="checkbox" id="follow" checked> Follow <span id="follow-name"></span></label>
+        </div>
+      </div>
+      <button class="tool-btn" id="hide-list"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg><span>Hide list</span></button>
+    </div>
+    <div class="legend">
+      <span><i class="lg-player"></i>Players</span>
+      <span><i class="lg-incident"></i>Road incidents</span>
+      <span><i class="lg-zone"></i>Zones</span>
+    </div>
+    <p class="empty-note" id="empty-note" hidden>No map background yet. Roads appear as you drive them.</p>
+  </section>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
   <script type="module" src="map.js"></script>
 </body>

@@ -19,9 +19,19 @@ function findGameDir() {
   }
   for (const lib of libraries) {
     const dir = path.join(lib, 'steamapps', 'common', 'Euro Truck Simulator 2');
-    if (fs.existsSync(path.join(dir, EXE)) && fs.existsSync(path.join(dir, 'base.scs'))) return dir;
+    if (isGameDir(dir)) return dir;
   }
   return null;
+}
+
+const isGameDir = dir => fs.existsSync(path.join(dir, EXE)) && fs.existsSync(path.join(dir, 'base.scs'));
+
+// Is the NTS telemetry plugin in place, and who does it report as?
+function pluginStatus(gameDir) {
+  const pluginDir = path.join(gameDir, 'bin', 'win_x64', 'plugins');
+  const ini = path.join(pluginDir, 'nts_telemetry.ini');
+  const name = fs.existsSync(ini) ? (fs.readFileSync(ini, 'utf8').match(/^name=(.*)$/m)?.[1] ?? null) : null;
+  return { installed: fs.existsSync(path.join(pluginDir, 'nts_telemetry.dll')), name };
 }
 
 const documentsDir = () => path.join(process.env.USERPROFILE, 'Documents', 'Euro Truck Simulator 2');
@@ -58,4 +68,4 @@ function launchGame(gameDir, extraArgs = []) {
   return child;
 }
 
-module.exports = { APP_ID, findGameDir, documentsDir, configureTelemetry, isGameRunning, launchGame };
+module.exports = { APP_ID, findGameDir, isGameDir, pluginStatus, documentsDir, configureTelemetry, isGameRunning, launchGame };

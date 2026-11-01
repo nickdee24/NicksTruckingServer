@@ -32,6 +32,10 @@ app.use('/tablet', express.static(tabletDir));
 app.use('/mods', express.static(modpack.packDir));
 app.use('/map', express.static(path.join(here, '..', 'public', 'map')));
 app.use('/admin', express.static(path.join(here, '..', 'public', 'admin')));
+// Images for news posts: put them in hub/public/media and set "image": "/media/file.jpg" on the post.
+app.use('/media', express.static(path.join(here, '..', 'public', 'media')));
+// Map background tiles, if set up in settings.json ("mapTiles").
+app.get('/api/map', (_req, res) => res.json({ tiles: settings.mapTiles ?? null }));
 app.get('/api/modpack', async (_req, res, next) => {
   try { res.json(await modpack.manifest()); } catch (err) { next(err); }
 });
@@ -143,6 +147,12 @@ const freshTelemetry = name => {
   return t && Date.now() - t.lastTelemetry < TELEMETRY_TIMEOUT_MS ? t : null;
 };
 
+// Lets the launcher's Settings page check that the game plugin is reaching the hub.
+app.get('/api/telemetry/:name', (req, res) => {
+  const t = telemetry.get(req.params.name.toLowerCase());
+  res.json({ seen: !!t, secondsAgo: t ? Math.round((Date.now() - t.lastTelemetry) / 1000) : null, truck: t?.truck ?? null });
+});
+
 udp.on('message', raw => {
   let msg;
   try { msg = JSON.parse(raw); } catch { return; }
@@ -180,10 +190,10 @@ function positionOf(client) {
   const p = client.player;
   if (p.spectator) return null;
   const t = freshTelemetry(p.name);
-  if (t) return { ...t, id: p.id };
+  if (t) return { ...t, id: p.id, server: p.server };
   if (p.lastTelemetry && Date.now() - p.lastTelemetry < TELEMETRY_TIMEOUT_MS) return p;
   if (sim && settings.simulation.simulateSelfWhenNoTelemetry) {
-    return { ...sim.self, id: p.id, name: p.name, simulated: true };
+    return { ...sim.self, id: p.id, name: p.name, server: p.server, simulated: true };
   }
   return null;
 }
@@ -285,7 +295,7 @@ setInterval(() => {
 
   const world = drivers.map(d => ({
     id: d.id, name: d.name, x: Math.round(d.x), z: Math.round(d.z), heading: d.heading,
-    speedKmh: d.speedKmh, truck: d.truck, cargo: d.cargo, to: d.to, isBot: !!d.isBot, simulated: !!d.simulated
+    speedKmh: d.speedKmh, truck: d.truck, cargo: d.cargo, to: d.to, server: d.server ?? 'main', isBot: !!d.isBot, simulated: !!d.simulated
   }));
 
   clients.forEach(c => {

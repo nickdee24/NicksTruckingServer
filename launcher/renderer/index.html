@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src *; img-src * data:; media-src 'self' file:; style-src 'self' 'unsafe-inline'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src *; img-src * data: file:; frame-src *; media-src 'self' file:; style-src 'self' 'unsafe-inline'">
   <title>Trucking Launcher</title>
   <link rel="stylesheet" href="launcher.css">
 </head>
@@ -19,65 +19,152 @@
     <span class="intro-skip">Click to skip</span>
   </div>
 
-  <header class="titlebar">
-    <span class="mark" id="mark"></span>
-    <span class="title" id="title"></span>
-    <span class="hub-state" id="hub-state"></span>
-    <button class="win-btn" id="settings-btn" title="Settings">⚙</button>
+  <aside class="sidebar">
+    <!-- Logo mark: replace with launcher/assets/logo-mark.png (shown at 32×32, make it 64×64). -->
+    <div class="logo-mark" data-asset="logo-mark.png" data-size="32×32"></div>
+    <nav>
+      <button class="nav" data-page="games"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>Games</button>
+      <button class="nav" data-page="news"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>News</button>
+      <button class="nav" data-page="map"><svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Map</button>
+      <button class="nav" data-page="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>Settings</button>
+      <button class="nav" data-page="support"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 1 3 6.2L4 20l1-3.5A8 8 0 0 1 4 12z"/><path d="M9 12h.01M12 12h.01M15 12h.01"/></svg>Support</button>
+    </nav>
+  </aside>
+
+  <header class="topbar">
+    <!-- Wordmark: replace with launcher/assets/logo-wordmark.png (shown at 170×36, make it 340×72). -->
+    <div class="wordmark" data-asset="logo-wordmark.png" data-size="170×36"></div>
+    <span class="beta">Beta</span>
+    <span class="page-title" id="page-title"></span>
+    <button class="ghost-btn" id="open-browser" hidden><svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>Open in browser</button>
     <button class="win-btn" id="min-btn" title="Minimise">—</button>
     <button class="win-btn close" id="close-btn" title="Close">✕</button>
   </header>
 
-  <main class="layout">
-    <section class="servers">
-      <h2>Choose a server</h2>
-      <div class="server-list" id="server-list"></div>
-
-      <div class="play-row">
-        <button class="play" id="play-btn" disabled>Play</button>
-        <div class="play-status" id="play-status"></div>
-      </div>
-
-      <div class="join card" id="join" hidden>
-        <div>
-          <h3>Join <span id="join-name"></span></h3>
-          <p class="muted">In the game, open <strong>Convoy → Search</strong>, paste the session id and enter the password. Press <kbd id="hotkey"></kbd> any time to open your tablet.</p>
-        </div>
-        <div class="join-fields">
-          <label>Session id <button class="copy" id="copy-id"></button></label>
-          <label>Password <button class="copy" id="copy-pass"></button></label>
+  <main class="view">
+    <!-- Games -->
+    <section class="page" data-page="games">
+      <div class="page-inner">
+        <h1>Games</h1>
+        <div class="game-grid">
+          <button class="game-card" id="game-ets2">
+            <div class="game-art" data-asset="backgrounds/ets2.jpg"></div>
+            <div class="game-info"><strong>Euro Truck Simulator 2</strong><span id="game-ets2-status" class="muted"></span></div>
+          </button>
+          <div class="game-card disabled">
+            <div class="game-art"></div>
+            <div class="game-info"><strong>American Truck Simulator</strong><span class="muted">Coming later</span></div>
+          </div>
         </div>
       </div>
     </section>
 
-    <aside class="side">
-      <h2>News</h2>
-      <ul class="news" id="news"></ul>
-      <h2>Tools</h2>
-      <div class="tools">
-        <button class="tool" data-open="/map/">Live map</button>
-        <button class="tool" data-open="/tablet/">Tablet</button>
-        <button class="tool" data-open="/admin/">Admin</button>
-        <button class="tool" id="dashtruck-btn">DashTruck</button>
+    <!-- ETS2 -->
+    <section class="page hero-page" data-page="ets2">
+      <div class="hero-bg" data-asset="backgrounds/ets2.jpg"></div>
+      <div class="hero-content">
+        <!-- Game logo: replace with launcher/assets/logo-ets2.png (shown at 280×150, make it 560×300). -->
+        <div class="game-logo" data-asset="logo-ets2.png" data-size="280×150"></div>
+        <div class="status-line"><span class="dot" id="game-dot"></span><span id="game-state">Ready</span><span class="muted" id="game-hint"></span></div>
+        <div class="server-line" id="server-line"></div>
+        <div class="actions">
+          <button class="play" id="play-btn" disabled><svg viewBox="0 0 24 24"><path d="M7 5v14l11-7z"/></svg><span id="play-label">Play</span></button>
+          <button class="secondary" data-goto="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Settings</button>
+        </div>
+        <div class="play-status" id="play-status"></div>
+        <div class="join" id="join" hidden>
+          <span class="muted">In ETS2: Convoy → Search. Press <kbd id="hotkey"></kbd> for your tablet.</span>
+          <label>Session id <button class="copy" id="copy-id"></button></label>
+          <label>Password <button class="copy" id="copy-pass"></button></label>
+        </div>
       </div>
-    </aside>
+      <button class="change-game" data-goto="games">← Change game</button>
+    </section>
+
+    <!-- News -->
+    <section class="page" data-page="news">
+      <div class="page-inner wide">
+        <div class="page-head"><h1>News</h1><button class="back" data-back>← Back</button></div>
+        <article class="news-hero" id="news-hero"></article>
+        <div class="tile-row">
+          <button class="tile" data-goto-news="announcements"><span class="pill">Server</span><strong>Announcements</strong></button>
+          <button class="tile" data-goto="map"><span class="pill">Live</span><strong>Live map</strong><small id="tile-driving"></small></button>
+          <button class="tile" data-goto="ets2"><span class="pill">Community</span><strong>Events</strong><small id="tile-events"></small></button>
+        </div>
+        <h2 class="section" id="announcements">Latest announcements</h2>
+        <div class="news-grid" id="news-grid"></div>
+      </div>
+    </section>
+
+    <!-- Map -->
+    <section class="page map-page" data-page="map">
+      <iframe id="map-frame" title="Live map"></iframe>
+    </section>
+
+    <!-- Settings -->
+    <section class="page" data-page="settings">
+      <div class="page-inner">
+        <div class="page-head"><h1>Settings</h1><button class="back" data-back>← Back</button></div>
+
+        <h2 class="section">Game location</h2>
+        <label class="field-label">Euro Truck Simulator 2 folder</label>
+        <input class="field" id="game-dir" readonly>
+        <p class="state-line"><span class="dot" id="dir-dot"></span><span id="dir-state"></span></p>
+        <div class="btn-row">
+          <button class="secondary" id="change-folder">Change folder</button>
+          <button class="secondary" id="find-steam">Find in Steam</button>
+        </div>
+
+        <h2 class="section">Telemetry</h2>
+        <p class="muted">The launcher installs the NTS telemetry plugin and points it at your hub each time you press Play. It sends your truck's position, speed and job so the map, Nearby, CB and traffic reports work.</p>
+        <p class="state-line"><span class="dot" id="tele-dot"></span><span id="tele-state"></span></p>
+        <div class="btn-row"><button class="secondary" id="check-telemetry">Check telemetry</button></div>
+
+        <h2 class="section">Launch parameters</h2>
+        <label class="field-label">Extra ETS2 parameters</label>
+        <input class="field" data-setting="gameArgs" placeholder="-unlimitedlog -rdevice dx11">
+        <p class="muted small">Added after -nointro when you press Play.</p>
+
+        <h2 class="section">Driver</h2>
+        <label class="field-label">Driver name</label>
+        <input class="field" data-setting="playerName" maxlength="32">
+        <label class="field-label">Tablet hotkey</label>
+        <input class="field" data-setting="overlayHotkey" placeholder="F8">
+
+        <h2 class="section">Connections</h2>
+        <label class="field-label">Hub address</label>
+        <input class="field" data-setting="hubUrl">
+        <label class="field-label">DashTruck address</label>
+        <input class="field" data-setting="dashTruckUrl" placeholder="http://localhost:…">
+
+        <h2 class="section">Launcher</h2>
+        <label class="check"><input type="checkbox" data-setting="playIntro"> Play the intro when the launcher opens</label>
+        <div class="btn-row"><button class="secondary" id="open-assets">Open logo and background folder</button></div>
+        <p class="saved muted small" id="saved"></p>
+      </div>
+    </section>
+
+    <!-- Support -->
+    <section class="page" data-page="support">
+      <div class="page-inner">
+        <div class="page-head"><h1>Support</h1><button class="back" data-back>← Back</button></div>
+        <div class="support-grid">
+          <button class="tile" data-open-hub="/admin/"><span class="pill">Admin</span><strong>Server admin</strong><small>News, announcements, incidents, zones</small></button>
+          <button class="tile" data-open-hub="/tablet/"><span class="pill">Tablet</span><strong>Tablet preview</strong><small>Test apps outside the game</small></button>
+          <button class="tile" id="open-docs"><span class="pill">Guides</span><strong>Documentation</strong><small>How everything fits together</small></button>
+          <button class="tile" id="open-mods"><span class="pill">Mods</span><strong>Mod folder</strong><small>Where the mod pack is installed</small></button>
+          <button class="tile" id="dashtruck-btn"><span class="pill">Tools</span><strong>DashTruck</strong><small>Open your dashboard</small></button>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <dialog id="settings">
-    <form method="dialog" id="settings-form">
-      <h2>Settings</h2>
-      <label>Driver name <input name="playerName" required maxlength="32"></label>
-      <label>Hub address <input name="hubUrl" required></label>
-      <label>Tablet hotkey <input name="overlayHotkey" required placeholder="F8"></label>
-      <label>Extra game launch options <input name="gameArgs" placeholder="-unlimitedlog -rdevice dx11"></label>
-      <label>DashTruck address <input name="dashTruckUrl" placeholder="http://localhost:…"></label>
-      <label class="check"><input type="checkbox" name="playIntro"> Play the intro when the launcher opens</label>
-      <div class="dialog-actions">
-        <button value="cancel" formnovalidate>Cancel</button>
-        <button value="save" class="primary">Save</button>
-      </div>
-    </form>
-  </dialog>
+  <footer class="footer">
+    <span class="whats-new"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6"/></svg>What's new</span>
+    <span class="new-pill">New</span>
+    <span class="ticker" id="ticker"></span>
+    <span class="about" id="about"></span>
+  </footer>
 
   <script src="launcher.js"></script>
 </body>

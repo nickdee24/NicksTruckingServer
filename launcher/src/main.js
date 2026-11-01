@@ -1,5 +1,5 @@
 // Launcher main process: launcher window, Play flow and the in-game overlay.
-const { app, BrowserWindow, ipcMain, globalShortcut, screen, clipboard, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, globalShortcut, screen, clipboard, shell, dialog } = require('electron');
 const fs = require('node:fs');
 const path = require('node:path');
 const game = require('./game');
@@ -47,7 +47,7 @@ function createLauncher() {
     show: false,
     webPreferences: { preload: path.join(__dirname, 'preload.js') }
   });
-  launcherWin.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
+  launcherWin.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'), { hash: process.env.NTS_PAGE ?? '' });
   launcherWin.once('ready-to-show', () => launcherWin.show());
   // Dev aid: NTS_SCREENSHOT=<file.png> saves a screenshot of the launcher after the intro, then quits.
   if (process.env.NTS_SCREENSHOT) {
@@ -119,13 +119,19 @@ function watchGame() {
   }, 5000);
 }
 
+// The folder chosen in Settings, or the one found in Steam.
+function gameDir() {
+  if (settings.gameDir && game.isGameDir(settings.gameDir)) return settings.gameDir;
+  return game.findGameDir();
+}
+
 async function play(serverId) {
   const progress = (step, detail) => launcherWin?.webContents.send('play:progress', { step, detail });
   saveSettings({ lastServer: serverId });
 
   progress('find', 'Finding Euro Truck Simulator 2…');
-  const gameDir = game.findGameDir();
-  if (!gameDir) throw new Error('Could not find Euro Truck Simulator 2 in your Steam libraries.');
+  const dir = gameDir();
+  if (!dir) throw new Error('Could not find Euro Truck Simulator 2. Set its folder in Settings.');
 
   progress('mods', 'Checking the mod pack…');
   const result = await mods.sync(settings.hubUrl, game.documentsDir(), (done, total, file) =>
@@ -134,13 +140,13 @@ async function play(serverId) {
 
   progress('telemetry', 'Connecting your truck to the hub…');
   const hubHost = new URL(settings.hubUrl).hostname.replace('localhost', '127.0.0.1');
-  game.configureTelemetry(gameDir, { playerName: settings.playerName, hubHost, telemetryPort: settings.telemetryPort });
+  game.configureTelemetry(dir, { playerName: settings.playerName, hubHost, telemetryPort: settings.telemetryPort });
 
   if (game.isGameRunning()) {
     progress('launch', 'The game is already running');
   } else {
     progress('launch', 'Starting the game…');
-    game.launchGame(gameDir, settings.gameArgs.split(/\s+/).filter(Boolean));
+    game.launchGame(dir, settings.gameArgs.split(/\s+/).filter(Boolean));
   }
   createOverlay();
   watchGame();
@@ -156,6 +162,27 @@ app.whenReady().then(() => {
   ipcMain.handle('settings:get', () => settings);
   ipcMain.handle('settings:set', (_e, next) => saveSettings(next));
   ipcMain.handle('game:find', () => game.findGameDir());
+  ipcMain.handle('game:status', () => {
+    const dir = gameDir();
+    return { dir, found: !!dir, running: game.isGameRunning(), plugin: dir ? game.pluginStatus(dir) : null };
+  });
+  ipcMain.handle('game:chooseFolder', async () => {
+    const result = await dialog.showOpenDialog(launcherWin, { title: 'Euro Truck Simulator 2 folder', properties: ['openDirectory'] });
+    if (result.canceled || !result.filePaths[0]) return null;
+    const dir = result.filePaths[0];
+    if (!game.isGameDir(dir)) throw new Error('That folder does not contain Euro Truck Simulator 2.');
+    saveSettings({ gameDir: dir });
+    return dir;
+  });
+  ipcMain.handle('game:findInSteam', () => {
+    const dir = game.findGameDir();
+    if (dir) saveSettings({ gameDir: dir });
+    return dir;
+  });
+  ipcMain.handle('open:path', (_e, which) => {
+    const paths = { docs: path.join(__dirname, '..', '..', 'docs'), mods: path.join(game.documentsDir(), 'mod'), assets: path.join(__dirname, '..', 'assets') };
+    if (paths[which]) shell.openPath(paths[which]);
+  });
   ipcMain.handle('play', (_e, serverId) => play(serverId));
   ipcMain.handle('clipboard:write', (_e, text) => clipboard.writeText(String(text)));
   ipcMain.handle('open:external', (_e, url) => /^https?:\/\//.test(url) && shell.openExternal(url));
