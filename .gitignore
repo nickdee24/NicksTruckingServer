@@ -6,3 +6,4 @@ out/
 server/runtime/
 server/config/server_packages.*
 mods/pack/*.scs
+telemetry-plugin/build/

@@ -1,5 +1,6 @@
 {
   "port": 7420,
+  "telemetryPort": 7421,
   "serverName": "Nick's Trucking Server",
   "cbRangeMeters": 2500,
   "nearbyRangeMeters": 5000,

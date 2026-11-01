@@ -3,6 +3,7 @@ import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { createSocket } from 'node:dgram';
 import { WebSocketServer } from 'ws';
 import { createSimulation } from './sim.js';
 
@@ -29,6 +30,7 @@ app.get('/api/server', (_req, res) => res.json({
 
 const http = createServer(app);
 const wss = new WebSocketServer({ server: http, path: '/ws' });
+const udp = createSocket('udp4');
 
 // Connected clients. Each one is a player at the wheel (a tablet, launcher or telemetry bridge).
 const clients = new Set();
@@ -38,9 +40,34 @@ let nextId = 1;
 const send = (ws, msg) => ws.readyState === ws.OPEN && ws.send(JSON.stringify(msg));
 const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 
+// Live telemetry from the game plugin (UDP), keyed by lower-cased player name.
+const telemetry = new Map();
+const freshTelemetry = name => {
+  const t = telemetry.get(name.toLowerCase());
+  return t && Date.now() - t.lastTelemetry < TELEMETRY_TIMEOUT_MS ? t : null;
+};
+
+udp.on('message', raw => {
+  let msg;
+  try { msg = JSON.parse(raw); } catch { return; }
+  if (msg.type !== 'telemetry' || !msg.name) return;
+  const name = String(msg.name).slice(0, 32);
+  telemetry.set(name.toLowerCase(), {
+    id: `t-${name.toLowerCase()}`, name,
+    x: Number(msg.x), z: Number(msg.z), heading: Number(msg.heading) || 0,
+    speedKmh: Math.round(Number(msg.speedKmh) || 0), paused: !!msg.paused,
+    truck: msg.truck || undefined, cargo: msg.cargo || undefined,
+    from: msg.from || undefined, to: msg.to || undefined, lastTelemetry: Date.now()
+  });
+  // Keep simulated drivers around the real truck (route centre is about 3 km E, 4 km S of start).
+  sim?.followPlayer(Number(msg.x), Number(msg.z));
+});
+
 // Where a client's player is: real telemetry if it is fresh, otherwise the simulated self.
 function positionOf(client) {
   const p = client.player;
+  const t = freshTelemetry(p.name);
+  if (t) return { ...t, id: p.id };
   if (p.lastTelemetry && Date.now() - p.lastTelemetry < TELEMETRY_TIMEOUT_MS) return p;
   if (sim && settings.simulation.simulateSelfWhenNoTelemetry) {
     return { ...sim.self, id: p.id, name: p.name, simulated: true };
@@ -48,9 +75,15 @@ function positionOf(client) {
   return null;
 }
 
+// Everyone on the map: connected clients, players with only a game plugin running, and bots.
 function allDrivers() {
-  const real = [...clients].map(positionOf).filter(Boolean);
-  return sim ? [...real, ...sim.drivers] : real;
+  // One entry per name, so a player with the tablet and launcher both open shows once.
+  const byName = new Map();
+  [...clients].map(positionOf).filter(Boolean).forEach(d => byName.set(d.name.toLowerCase(), d));
+  const real = [...byName.values()];
+  const names = new Set(byName.keys());
+  const pluginOnly = [...telemetry.keys()].filter(n => !names.has(n)).map(freshTelemetry).filter(Boolean);
+  return [...real, ...pluginOnly, ...(sim ? sim.drivers : [])];
 }
 
 function pushMessage(entry) {
@@ -128,11 +161,11 @@ setInterval(() => {
   clients.forEach(c => {
     const me = positionOf(c);
     const others = drivers
-      .filter(d => d.id !== c.player.id)
+      .filter(d => d.name.toLowerCase() !== c.player.name.toLowerCase())
       .map(d => {
         const dist = me ? distance(me, d) : null;
         return {
-          id: d.id, name: d.name, truck: d.truck, cargo: d.cargo, speedKmh: d.speedKmh,
+          id: d.id, name: d.name, truck: d.truck, cargo: d.cargo, from: d.from, to: d.to, speedKmh: d.speedKmh,
           x: Math.round(d.x), z: Math.round(d.z), heading: d.heading, isBot: !!d.isBot,
           distance: dist === null ? null : Math.round(dist),
           bearing: me ? Math.atan2(d.x - me.x, -(d.z - me.z)) : null,
@@ -148,6 +181,8 @@ setInterval(() => {
     });
   });
 }, 1000);
+
+udp.bind(settings.telemetryPort, () => console.log(`Listening for game telemetry on udp ${settings.telemetryPort}`));
 
 http.listen(settings.port, () => {
   console.log(`Hub running on http://localhost:${settings.port}  (tablet: /tablet/)`);

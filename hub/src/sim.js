@@ -69,12 +69,12 @@ class Driver {
     this.update(0);
   }
 
-  update(dtSec) {
+  update(dtSec, origin = { x: 0, z: 0 }) {
     const kmh = this.kmh * (0.85 + Math.random() * 0.3);
     this.dist += (this.reverse ? -1 : 1) * (kmh / 3.6) * dtSec;
     const p = pointAlong(this.route, this.dist);
-    this.x = p.x;
-    this.z = p.z;
+    this.x = origin.x + p.x;
+    this.z = origin.z + p.z;
     this.heading = this.reverse ? p.heading + Math.PI : p.heading;
     this.speedKmh = Math.round(kmh);
   }
@@ -95,13 +95,23 @@ export function createSimulation({ bots, onChat, onCb }) {
   const self = new Driver({ id: 'self-sim', name: 'You', truck: 'Scania R', cargo: 'Test load', route: ROUTES[0], offset: 0, kmh: 80, reverse: false });
   self.isBot = false;
 
+  // Bots drive around this point. It moves to wherever the real player is, so they stay nearby.
+  const origin = { x: 0, z: 0 };
+
   let last = Date.now();
   const tick = () => {
     const now = Date.now();
     const dt = (now - last) / 1000;
     last = now;
-    drivers.forEach(d => d.update(dt));
-    self.update(dt);
+    drivers.forEach(d => d.update(dt, origin));
+    self.update(dt, origin);
+  };
+
+  const followPlayer = (x, z) => {
+    if (Math.hypot(x - origin.x - 3000, z - origin.z - 4000) > 15000) {
+      origin.x = x - 3000;
+      origin.z = z - 4000;
+    }
   };
 
   const chatter = () => {
@@ -116,5 +126,5 @@ export function createSimulation({ bots, onChat, onCb }) {
     `Copy that, ${name}`, `Loud and clear, ${name}`, `Roger, ${name}, see you down the road`, `10-4, ${name}`
   ]);
 
-  return { drivers, self, replyTo, stop: () => timers.forEach(clearInterval) };
+  return { drivers, self, replyTo, followPlayer, stop: () => timers.forEach(clearInterval) };
 }
