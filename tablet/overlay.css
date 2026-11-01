@@ -79,6 +79,20 @@ body.editing .feed li { animation: none; }
 .announcement.event .mark { color: var(--good, #3fb950); }
 .announcement h3 { margin: 0 0 2px; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted, #8b96a3); }
 .announcement p { margin: 0; font-size: 17px; line-height: 1.35; }
+/* "strip" layout: a full-width banner along the top edge of the screen. */
+.announcements.strip { top: 0; width: 100vw; gap: 0; }
+.announcements.strip .announcement {
+  justify-content: center;
+  padding: 10px 24px;
+  border-left: 0;
+  border-bottom: 3px solid var(--accent, #f2a33a);
+  border-radius: 0;
+}
+.announcements.strip .announcement.warning { border-color: var(--bad, #f85149); }
+.announcements.strip .announcement.event { border-color: var(--good, #3fb950); }
+.announcements.strip .announcement > div { display: flex; gap: 14px; align-items: baseline; }
+.announcements.strip .mark { width: 32px; height: 32px; }
+
 @keyframes drop { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: none; } }
 @keyframes lift { to { opacity: 0; transform: translateY(-20px); } }
 

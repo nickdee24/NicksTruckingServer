@@ -11,9 +11,9 @@ for (const [key, value] of Object.entries(config.theme)) {
 
 // Widget positions and visibility, saved per PC. config.overlay sets the defaults.
 const defaults = config.overlay?.widgets ?? {
-  nearby: { x: 24, y: 24, show: true },
-  chat: { x: 24, y: 160, show: true },
-  cb: { x: 24, y: 400, show: true }
+  nearby: { x: 24, y: 80, show: true },
+  chat: { x: 24, y: 200, show: true },
+  cb: { x: 24, y: 440, show: true }
 };
 let layout;
 try { layout = { ...defaults, ...JSON.parse(localStorage.getItem('overlay-layout')) }; } catch { layout = { ...defaults }; }
@@ -68,7 +68,9 @@ hub.on('chat', m => addLine($('chat'), '<b data-t></b> <span data-t></span>', [m
 hub.on('cb', m => addLine($('cb'), '<b data-t></b> <small data-t></small> <span data-t></span>',
   [m.from, m.distance ? `${(m.distance / 1000).toFixed(1)} km` : time(m.ts), m.text]));
 
-// Server announcements: a banner at the top centre that slides away after its time is up.
+// Server announcements slide in at the top and away after their time is up.
+// config.overlay.announcementLayout: "strip" (full-width banner) or "card" (box at top centre).
+$('announcements').classList.add(config.overlay?.announcementLayout ?? 'strip');
 hub.on('announcement', a => {
   const el = document.createElement('div');
   el.className = `announcement ${a.style}`;
