@@ -4,6 +4,11 @@
   "serverName": "Nick's Trucking Server",
   "cbRangeMeters": 2500,
   "nearbyRangeMeters": 5000,
+  "zoneNotices": {
+    "service": "Collisions are off in this area",
+    "depot": "Collisions are off in this company area",
+    "custom": ""
+  },
   "simulation": {
     "enabled": true,
     "bots": 6,

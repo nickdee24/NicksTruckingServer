@@ -52,7 +52,7 @@ const setVisible = visible => {
 window.overlay?.onVisible(setVisible);
 addEventListener('keydown', e => { if (e.key === 'Escape') window.overlay?.close(); });
 
-const hub = connectHub(name);
+const hub = connectHub(name, params.get('server'));
 const time = ts => new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
 function addLine(list, html, parts) {
@@ -70,7 +70,15 @@ hub.on('cb', m => addLine($('cb'), '<b data-t></b> <small data-t></small> <span 
 
 // Server announcements slide in at the top and away after their time is up.
 // config.overlay.announcementLayout: "strip" (full-width banner) or "card" (box at top centre).
-$('announcements').classList.add(config.overlay?.announcementLayout ?? 'strip');
+const layoutName = config.overlay?.announcementLayout ?? 'strip';
+$('announcements').classList.add(layoutName);
+$('top-stack').classList.add(layoutName);
+
+// Area notice while inside a zone (truck stop, fuel station, depot), cleared on the way out.
+hub.on('zone', ({ notice }) => {
+  $('notice').hidden = !notice;
+  $('notice-text').textContent = notice ?? '';
+});
 hub.on('announcement', a => {
   const el = document.createElement('div');
   el.className = `announcement ${a.style}`;

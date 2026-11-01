@@ -16,12 +16,12 @@ server_config : _nameless.server.config {
  server_logon_token: ""
  player_damage: {{PLAYER_DAMAGE}}
  traffic: {{TRAFFIC}}
- hide_in_company: false
+ hide_in_company: {{HIDE_IN_COMPANY}}
  hide_colliding: true
  force_speed_limiter: {{SPEED_LIMITER}}
  mods_optioning: false
  timezones: 0
- service_no_collision: false
+ service_no_collision: {{SERVICE_NO_COLLISION}}
  in_menu_ghosting: false
  name_tags: true
  friends_only: false

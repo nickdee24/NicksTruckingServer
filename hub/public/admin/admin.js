@@ -50,6 +50,38 @@ async function loadIncidents() {
   )));
 }
 
+async function loadZones() {
+  const { kinds, items } = await api('/api/zones');
+  if (!$('zone-kinds').options.length) {
+    for (const [id, k] of Object.entries(kinds)) $('zone-kinds').add(new Option(k.label, id));
+  }
+  $('zones').replaceChildren(...items.map(zn => {
+    const li = row(
+      `${kinds[zn.kind]?.label ?? zn.kind}${zn.name ? ` · ${zn.name}` : ''}`,
+      `${zn.source} · ${zn.radius} m · at ${zn.x}, ${zn.z}`,
+      async () => { await api(`/api/admin/zones/${zn.id}`, { method: 'DELETE' }); loadZones(); }
+    );
+    const input = document.createElement('input');
+    input.placeholder = 'Default notice';
+    input.value = zn.message ?? '';
+    input.onchange = () => api(`/api/admin/zones/${zn.id}`, { method: 'PATCH', body: { message: input.value } });
+    li.insertBefore(input, li.querySelector('button'));
+    return li;
+  }));
+}
+
+$('zone-form').onsubmit = async e => {
+  e.preventDefault();
+  const f = e.target;
+  const [x, z] = f.at.value.split(',');
+  if (!x) return alert('Pick a driver to place the zone at.');
+  try {
+    await api('/api/admin/zones', { method: 'POST', body: { kind: f.kind.value, x, z, name: f.name.value, radius: f.radius.value || undefined, message: f.message.value } });
+    f.name.value = f.message.value = '';
+    loadZones();
+  } catch (err) { alert(err.message); }
+};
+
 // "At a position" can be filled from any driver's current spot.
 function watchDrivers() {
   const ws = new WebSocket(`ws://${location.host}/ws`);
@@ -68,6 +100,11 @@ function watchDrivers() {
     const keep = [...sel.options].find(o => o.dataset.name && current && o.textContent === current);
     if (keep) sel.value = keep.value;
     sel.dataset.selectedName = sel.selectedOptions[0]?.textContent ?? '';
+    const zoneAt = $('zone-at');
+    const zoneCurrent = zoneAt.selectedOptions[0]?.textContent;
+    zoneAt.replaceChildren(new Option('At a driver…', ''), ...msg.drivers.map(d => new Option(`At ${d.name}`, `${d.x},${d.z}`)));
+    const again = [...zoneAt.options].find(o => o.textContent === zoneCurrent);
+    if (again) zoneAt.value = again.value;
   };
   ws.onclose = () => setTimeout(watchDrivers, 2000);
 }
@@ -113,5 +150,6 @@ $('incident-form').onsubmit = async e => {
 loadServers();
 loadNews();
 loadIncidents();
+loadZones();
 watchDrivers();
 setInterval(loadServers, 10000);

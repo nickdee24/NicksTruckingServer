@@ -1,5 +1,5 @@
 // Connection to the hub. Apps subscribe to message types with hub.on(type, fn).
-export function connectHub(playerName) {
+export function connectHub(playerName, server) {
   const listeners = new Map();
   const latest = new Map();
   let ws;
@@ -13,7 +13,7 @@ export function connectHub(playerName) {
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
     ws = new WebSocket(`${proto}://${location.host}/ws`);
     ws.onopen = () => {
-      ws.send(JSON.stringify({ type: 'hello', name: playerName }));
+      ws.send(JSON.stringify({ type: 'hello', name: playerName, server }));
       emit('connection', { online: true });
     };
     ws.onmessage = e => {

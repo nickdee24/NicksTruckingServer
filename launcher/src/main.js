@@ -59,9 +59,12 @@ function createLauncher() {
   launcherWin.on('closed', () => { launcherWin = null; });
 }
 
+const overlayUrl = () => `${settings.hubUrl}/tablet/overlay.html?name=${encodeURIComponent(settings.playerName)}&server=${encodeURIComponent(settings.lastServer)}`;
+
 // A see-through, always-on-top window over the game. Clicks pass through it until the tablet is opened.
 function createOverlay() {
-  if (overlayWin) return;
+  // Already open: reload so it knows which server was picked this time.
+  if (overlayWin) return overlayWin.loadURL(overlayUrl());
   const { bounds } = screen.getPrimaryDisplay();
   overlayWin = new BrowserWindow({
     ...bounds,
@@ -78,7 +81,7 @@ function createOverlay() {
   overlayWin.setAlwaysOnTop(true, 'screen-saver');
   overlayWin.setVisibleOnAllWorkspaces(true);
   overlayWin.setIgnoreMouseEvents(true, { forward: true });
-  overlayWin.loadURL(`${settings.hubUrl}/tablet/overlay.html?name=${encodeURIComponent(settings.playerName)}`);
+  overlayWin.loadURL(overlayUrl());
   overlayWin.on('closed', () => { overlayWin = null; overlayVisible = false; });
 }
 

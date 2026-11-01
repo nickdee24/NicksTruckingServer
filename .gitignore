@@ -9,3 +9,4 @@ mods/pack/*
 telemetry-plugin/build/
 hub/data/roads.json
 hub/data/incidents.json
+hub/data/zones.json

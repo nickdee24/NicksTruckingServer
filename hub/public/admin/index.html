@@ -46,6 +46,22 @@
     </section>
 
     <section class="card">
+      <h2>Zones and area notices</h2>
+      <p class="muted small">Truck stops, fuel stations and depots are learned as you refuel and do jobs. Drivers inside a zone see its notice under the announcement banner. Leave the notice empty to use the default.</p>
+      <form id="zone-form">
+        <div class="row">
+          <select name="kind" id="zone-kinds"></select>
+          <select name="at" id="zone-at"><option value="">At a driver…</option></select>
+          <input name="name" placeholder="Name (optional)" maxlength="60">
+          <input name="radius" type="number" min="20" placeholder="Radius m">
+        </div>
+        <input name="message" placeholder="Notice (optional), e.g. Collisions are off in this area" maxlength="120">
+        <button>Add zone</button>
+      </form>
+      <ul class="list" id="zones"></ul>
+    </section>
+
+    <section class="card">
       <h2>Add a traffic incident</h2>
       <form id="incident-form">
         <div class="row">

@@ -21,7 +21,11 @@
   </div>
 
   <!-- Announcements from the admin page drop in here, top centre. -->
-  <div class="announcements" id="announcements"></div>
+  <!-- Area notices ("Collisions are off in this area") sit just below them while you're in a zone. -->
+  <div class="top-stack" id="top-stack">
+    <div class="announcements" id="announcements"></div>
+    <div class="notice" id="notice" hidden><span class="notice-icon">i</span><span id="notice-text"></span></div>
+  </div>
 
   <div class="tablet-wrap" id="tablet-wrap" hidden>
     <iframe id="tablet" title="Tablet"></iframe>

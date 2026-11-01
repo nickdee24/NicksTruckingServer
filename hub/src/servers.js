@@ -45,6 +45,8 @@ export function createServerStatus(repoRoot) {
         traffic: s.traffic,
         playerDamage: s.playerDamage,
         speedLimiter: s.forceSpeedLimiter,
+        serviceNoCollision: !!s.serviceNoCollision,
+        hideInCompany: !!s.hideInCompany,
         online,
         password,
         ...log

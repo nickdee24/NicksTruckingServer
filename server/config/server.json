@@ -12,6 +12,8 @@
       "traffic": false,
       "playerDamage": true,
       "forceSpeedLimiter": false,
+      "serviceNoCollision": true,
+      "hideInCompany": true,
       "portOffset": 0
     },
     {
@@ -24,6 +26,8 @@
       "traffic": true,
       "playerDamage": true,
       "forceSpeedLimiter": false,
+      "serviceNoCollision": true,
+      "hideInCompany": true,
       "portOffset": 2
     },
     {
@@ -36,6 +40,8 @@
       "traffic": false,
       "playerDamage": false,
       "forceSpeedLimiter": true,
+      "serviceNoCollision": true,
+      "hideInCompany": true,
       "portOffset": 4
     }
   ]

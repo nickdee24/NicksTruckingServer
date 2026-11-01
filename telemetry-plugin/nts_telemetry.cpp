@@ -33,6 +33,7 @@ static scs_log_t game_log = NULL;
 static struct {
 	scs_value_dplacement_t placement;
 	float speed;
+	float fuel;
 	bool paused;
 	char truck[96];
 	char cargo[96];
@@ -87,9 +88,9 @@ static void send_state(void)
 	const double heading = -state.placement.orientation.heading * 6.283185307179586;
 	const int len = _snprintf_s(buf, sizeof buf, _TRUNCATE,
 		"{\"type\":\"telemetry\",\"name\":\"%s\",\"x\":%.1f,\"y\":%.1f,\"z\":%.1f,\"heading\":%.4f,"
-		"\"speedKmh\":%.1f,\"paused\":%s,\"truck\":\"%s\",\"cargo\":\"%s\",\"from\":\"%s\",\"to\":\"%s\"}",
+		"\"speedKmh\":%.1f,\"fuel\":%.1f,\"paused\":%s,\"truck\":\"%s\",\"cargo\":\"%s\",\"from\":\"%s\",\"to\":\"%s\"}",
 		player_name, state.placement.position.x, state.placement.position.y, state.placement.position.z, heading,
-		state.speed * 3.6f, state.paused ? "true" : "false", state.truck, state.cargo,
+		state.speed * 3.6f, state.fuel, state.paused ? "true" : "false", state.truck, state.cargo,
 		state.source_city, state.destination_city);
 	if (len > 0) sendto(sock, buf, len, 0, (const sockaddr *)&hub_addr, sizeof hub_addr);
 }
@@ -138,6 +139,24 @@ SCSAPI_VOID on_configuration(const scs_event_t UNUSED(event), const void *const 
 	}
 }
 
+// Job delivered or cancelled: tells the hub where the truck was, so it can learn company depots.
+SCSAPI_VOID on_gameplay(const scs_event_t UNUSED(event), const void *const event_info, const scs_context_t UNUSED(ctx))
+{
+	const scs_telemetry_gameplay_event_t *info = static_cast<const scs_telemetry_gameplay_event_t *>(event_info);
+	char id[48];
+	copy_clean(id, sizeof id, info->id);
+	char buf[256];
+	const int len = _snprintf_s(buf, sizeof buf, _TRUNCATE,
+		"{\"type\":\"gameplay\",\"name\":\"%s\",\"event\":\"%s\",\"x\":%.1f,\"z\":%.1f}",
+		player_name, id, state.placement.position.x, state.placement.position.z);
+	if (len > 0) sendto(sock, buf, len, 0, (const sockaddr *)&hub_addr, sizeof hub_addr);
+}
+
+SCSAPI_VOID store_fuel(const scs_string_t UNUSED(name), const scs_u32_t UNUSED(index), const scs_value_t *const value, const scs_context_t UNUSED(ctx))
+{
+	state.fuel = value ? value->value_float.value : 0.0f;
+}
+
 SCSAPI_VOID store_placement(const scs_string_t UNUSED(name), const scs_u32_t UNUSED(index), const scs_value_t *const value, const scs_context_t UNUSED(ctx))
 {
 	if (value) state.placement = value->value_dplacement;
@@ -168,6 +187,8 @@ SCSAPI_RESULT scs_telemetry_init(const scs_u32_t version, const scs_telemetry_in
 		p->register_for_event(SCS_TELEMETRY_EVENT_paused, on_pause, NULL) == SCS_RESULT_ok &&
 		p->register_for_event(SCS_TELEMETRY_EVENT_started, on_pause, NULL) == SCS_RESULT_ok &&
 		p->register_for_event(SCS_TELEMETRY_EVENT_configuration, on_configuration, NULL) == SCS_RESULT_ok;
+	// Gameplay events arrived in a later SDK; older games simply skip them.
+	p->register_for_event(SCS_TELEMETRY_EVENT_gameplay, on_gameplay, NULL);
 	if (!ok) {
 		closesocket(sock);
 		WSACleanup();
@@ -176,6 +197,7 @@ SCSAPI_RESULT scs_telemetry_init(const scs_u32_t version, const scs_telemetry_in
 
 	p->register_for_channel(SCS_TELEMETRY_TRUCK_CHANNEL_world_placement, SCS_U32_NIL, SCS_VALUE_TYPE_dplacement, SCS_TELEMETRY_CHANNEL_FLAG_none, store_placement, NULL);
 	p->register_for_channel(SCS_TELEMETRY_TRUCK_CHANNEL_speed, SCS_U32_NIL, SCS_VALUE_TYPE_float, SCS_TELEMETRY_CHANNEL_FLAG_none, store_speed, NULL);
+	p->register_for_channel(SCS_TELEMETRY_TRUCK_CHANNEL_fuel, SCS_U32_NIL, SCS_VALUE_TYPE_float, SCS_TELEMETRY_CHANNEL_FLAG_none, store_fuel, NULL);
 
 	game_log(SCS_LOG_TYPE_message, "[nts] telemetry plugin ready");
 	return SCS_RESULT_ok;

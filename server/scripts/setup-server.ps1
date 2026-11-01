@@ -28,6 +28,7 @@ foreach ($s in Get-Servers $Id) {
         VIRTUAL_PORT = 100 + $s.portOffset; VIRTUAL_QUERY_PORT = 101 + $s.portOffset
         DEDICATED_PORT = 27015 + $s.portOffset; DEDICATED_QUERY_PORT = 27016 + $s.portOffset
         PLAYER_DAMAGE = & $lower $s.playerDamage; TRAFFIC = & $lower $s.traffic; SPEED_LIMITER = & $lower $s.forceSpeedLimiter
+        SERVICE_NO_COLLISION = & $lower $s.serviceNoCollision; HIDE_IN_COMPANY = & $lower $s.hideInCompany
     }
     $sii = $template
     foreach ($k in $values.Keys) { $sii = $sii.Replace("{{$k}}", [string]$values[$k]) }
