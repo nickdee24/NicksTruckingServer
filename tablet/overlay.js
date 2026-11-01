@@ -69,16 +69,46 @@ hub.on('cb', m => addLine($('cb'), '<b data-t></b> <small data-t></small> <span 
   [m.from, m.distance ? `${(m.distance / 1000).toFixed(1)} km` : time(m.ts), m.text]));
 
 // Server announcements slide in at the top and away after their time is up.
-// config.overlay.announcementLayout: "strip" (full-width banner) or "card" (box at top centre).
-const layoutName = config.overlay?.announcementLayout ?? 'strip';
+// config.overlay.announcementLayout: "card" (box at top centre) or "strip" (full-width banner).
+const layoutName = config.overlay?.announcementLayout ?? 'card';
 $('announcements').classList.add(layoutName);
 $('top-stack').classList.add(layoutName);
 
-// Area notice while inside a zone (truck stop, fuel station, depot), cleared on the way out.
-hub.on('zone', ({ notice }) => {
-  $('notice').hidden = !notice;
-  $('notice-text').textContent = notice ?? '';
+// Area notice while inside a zone. Truck stops, fuel stations and depots show a "collisions off"
+// icon; on the way out a "collisions on" box shows for a few seconds.
+const ICONS = {
+  // Two trucks nose to nose, with a slash through them when collisions are off.
+  off: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="9" width="8" height="6" rx="1"/><rect x="14" y="9" width="8" height="6" rx="1"/><path d="M3 21 21 3"/></svg>',
+  on: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="9" width="8" height="6" rx="1"/><rect x="14" y="9" width="8" height="6" rx="1"/><path d="M11 6l1 2 1-2M11 18l1-2 1 2"/></svg>',
+  info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>'
+};
+const LABELS = { off: 'Collisions off', on: 'Collisions on', info: 'Area notice' };
+let noticeTimer = null;
+let showingCollisionOff = false;
+
+function showNotice(state, text) {
+  clearTimeout(noticeTimer);
+  $('notice').className = `notice ${state}`;
+  $('notice-icon').innerHTML = ICONS[state];
+  $('notice-label').textContent = LABELS[state];
+  $('notice-text').textContent = text;
+  $('notice').hidden = false;
+}
+
+hub.on('zone', ({ zone, notice }) => {
+  const collisionZone = zone && (zone.kind === 'service' || zone.kind === 'depot');
+  if (notice) {
+    showNotice(collisionZone ? 'off' : 'info', notice);
+    showingCollisionOff = !!collisionZone;
+  } else if (showingCollisionOff) {
+    showNotice('on', 'Collisions are back on');
+    showingCollisionOff = false;
+    noticeTimer = setTimeout(() => { $('notice').hidden = true; }, 5000);
+  } else {
+    $('notice').hidden = true;
+  }
 });
+
 hub.on('announcement', a => {
   const el = document.createElement('div');
   el.className = `announcement ${a.style}`;

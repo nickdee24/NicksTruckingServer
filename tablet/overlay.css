@@ -53,31 +53,36 @@ body.editing .feed li { animation: none; }
 .top-stack.strip { top: 0; width: 100vw; }
 .announcements { display: flex; flex-direction: column; gap: 10px; width: 100%; }
 
-/* Area notice: a slim banner under the announcements while you're inside a zone. */
+/* Area notice: a box under the announcements. Its icon shows whether collisions are off or on. */
 .notice {
+  --state: var(--accent, #f2a33a);
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 7px 18px 7px 8px;
-  border-radius: 999px;
-  background: rgba(13, 17, 23, .82);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, .45);
-  font-size: 14px;
+  gap: 12px;
+  padding: 10px 18px 10px 10px;
+  border: 1px solid color-mix(in srgb, var(--state) 70%, transparent);
+  border-radius: 12px;
+  background: rgba(13, 17, 23, .88);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .45);
+  font-size: 15px;
   animation: drop .35s ease-out both;
 }
 .notice[hidden] { display: none; }
+.notice.off { --state: var(--warn, #d29922); }
+.notice.on { --state: var(--good, #3fb950); }
+.notice.info { --state: var(--accent, #f2a33a); }
 .notice-icon {
   display: grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--accent, #f2a33a);
-  color: #0d1117;
-  font-size: 13px;
-  font-weight: 800;
-  font-style: italic;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--state);
+  border-radius: 9px;
+  color: var(--state);
 }
+.notice-icon svg { width: 24px; height: 24px; }
+.notice small { display: block; color: var(--text-muted, #8b96a3); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
 .top-stack.strip .notice { margin-top: 8px; }
 .announcement {
   display: flex;
