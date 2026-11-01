@@ -22,7 +22,7 @@
     "wallpaper": "linear-gradient(160deg, #1b2533 0%, #0d1117 55%, #2a1d0e 100%)"
   },
   "overlay": {
-    "announcementLayout": "card"
+    "announcementLayout": "strip"
   },
   "apps": [
     { "id": "nearby", "label": "Nearby", "tint": "#f2a33a" },
