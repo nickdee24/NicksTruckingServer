@@ -6,7 +6,7 @@ Everything big lives in `D:\TruckingServerData`:
 | --- | --- |
 | `steamcmd\` | Valve's SteamCMD |
 | `ets2ds\` | ETS2 Dedicated Server (Steam app 1948160) |
-| `home\Euro Truck Simulator 2\` | The server's files: `server_config.sii`, `server_packages.*`, `server.log.txt` |
+| `servers\<id>\home\Euro Truck Simulator 2\` | Each server's files (`main`, `beta`, `event`): `server_config.sii`, `server_packages.*`, `server.log.txt` |
 | `server_password.txt` | The lobby password (not in git) |
 
 ## One-time step in the game
@@ -22,8 +22,8 @@ The server needs to know your map, DLC and mods. Export them from the game:
 | Task | Command |
 | --- | --- |
 | Rebuild config after editing `server/config/server.json` | `server\scripts\setup-server.ps1` |
-| Start the server | `server\scripts\start-server.ps1` |
-| Stop the server | `server\scripts\stop-server.ps1` |
+| Start all servers, or one | `server\scripts\start-server.ps1` or `start-server.ps1 main` |
+| Stop all servers, or one | `server\scripts\stop-server.ps1` or `stop-server.ps1 event` |
 | Update the server after an ETS2 patch | `server\scripts\update-server.ps1` |
 
 ## Joining

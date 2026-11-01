@@ -1,14 +1,20 @@
-# Starts the ETS2 dedicated server in its own window.
-# -nosingle lets it run alongside the game on the same PC.
+# Starts dedicated servers in the background.
+#   start-server.ps1          all servers
+#   start-server.ps1 main     just Main
+# -nosingle lets them run alongside the game and each other on the same PC.
+param([string[]]$Id)
 $ErrorActionPreference = 'Stop'
-$repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$cfg = Get-Content "$repo\server\config\server.json" -Raw | ConvertFrom-Json
-$exe = Join-Path $cfg.dataRoot 'ets2ds\bin\win_x64\eurotrucks2_server.exe'
-$home_ = Join-Path $cfg.dataRoot 'home'
-$serverDir = Join-Path $home_ 'Euro Truck Simulator 2'
+. "$PSScriptRoot\common.ps1"
 
-if (-not (Test-Path $exe)) { throw "Dedicated server not installed at $exe. Run update-server.ps1 first." }
-if (-not (Test-Path "$serverDir\server_packages.sii")) { throw "Server packages missing. Run setup-server.ps1 after exporting them in-game." }
+if (-not (Test-Path $ServerExe)) { throw "Dedicated server not installed at $ServerExe. Run update-server.ps1 first." }
 
-Start-Process $exe -ArgumentList "-homedir `"$home_`"", '-nosingle' -WorkingDirectory (Split-Path $exe)
-Write-Host "Server starting. Log: $serverDir\server.log.txt"
+foreach ($s in Get-Servers $Id) {
+    if (Get-ServerProcess $s) { Write-Host "[$($s.id)] already running"; continue }
+    $files = Get-ServerFiles $s
+    if (-not (Test-Path "$files\server_packages.sii")) { throw "[$($s.id)] server packages missing. Run setup-server.ps1 first." }
+
+    $proc = Start-Process $ServerExe -ArgumentList "-homedir `"$(Get-ServerHome $s)`"", '-nosingle' `
+        -WorkingDirectory (Split-Path $ServerExe) -WindowStyle Minimized -PassThru
+    Set-Content (Get-ServerPidFile $s) $proc.Id
+    Write-Host "[$($s.id)] starting (pid $($proc.Id)). Log: $files\server.log.txt"
+}

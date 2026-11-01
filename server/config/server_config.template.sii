@@ -5,20 +5,20 @@ server_config : _nameless.server.config {
  description: "{{DESCRIPTION}}"
  welcome_message: "{{WELCOME}}"
  password: "{{PASSWORD}}"
- max_players: 8
+ max_players: {{MAX_PLAYERS}}
  max_vehicles_total: 100
  max_ai_vehicles_player: 50
  max_ai_vehicles_player_spawn: 50
- connection_virtual_port: 100
- query_virtual_port: 101
- connection_dedicated_port: 27015
- query_dedicated_port: 27016
+ connection_virtual_port: {{VIRTUAL_PORT}}
+ query_virtual_port: {{VIRTUAL_QUERY_PORT}}
+ connection_dedicated_port: {{DEDICATED_PORT}}
+ query_dedicated_port: {{DEDICATED_QUERY_PORT}}
  server_logon_token: ""
- player_damage: true
- traffic: true
+ player_damage: {{PLAYER_DAMAGE}}
+ traffic: {{TRAFFIC}}
  hide_in_company: false
  hide_colliding: true
- force_speed_limiter: false
+ force_speed_limiter: {{SPEED_LIMITER}}
  mods_optioning: false
  timezones: 0
  service_no_collision: false

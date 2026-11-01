@@ -1,7 +1,42 @@
 {
-  "lobbyName": "Nick's Trucking Server",
-  "description": "Private test server",
-  "welcome": "Welcome to Nick's Trucking Server. Drive safe!",
   "dataRoot": "D:\\TruckingServerData",
-  "gameDocs": "%USERPROFILE%\\Documents\\Euro Truck Simulator 2"
+  "gameDocs": "%USERPROFILE%\\Documents\\Euro Truck Simulator 2",
+  "servers": [
+    {
+      "id": "main",
+      "lobbyName": "Nick's Trucking - Main",
+      "description": "The main server",
+      "welcome": "Welcome to the Main server. Drive safe!",
+      "tagline": "Everyday driving, full traffic",
+      "maxPlayers": 8,
+      "traffic": true,
+      "playerDamage": true,
+      "forceSpeedLimiter": false,
+      "portOffset": 0
+    },
+    {
+      "id": "beta",
+      "lobbyName": "Nick's Trucking - Beta",
+      "description": "Test new mods and settings here",
+      "welcome": "Beta server: things may break.",
+      "tagline": "New mods and settings in testing",
+      "maxPlayers": 8,
+      "traffic": true,
+      "playerDamage": true,
+      "forceSpeedLimiter": false,
+      "portOffset": 2
+    },
+    {
+      "id": "event",
+      "lobbyName": "Nick's Trucking - Event",
+      "description": "Convoys and special events",
+      "welcome": "Event server: follow the convoy lead.",
+      "tagline": "Convoys and special events",
+      "maxPlayers": 8,
+      "traffic": false,
+      "playerDamage": false,
+      "forceSpeedLimiter": true,
+      "portOffset": 4
+    }
+  ]
 }

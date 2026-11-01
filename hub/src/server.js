@@ -6,10 +6,13 @@ import path from 'node:path';
 import { createSocket } from 'node:dgram';
 import { WebSocketServer } from 'ws';
 import { createSimulation } from './sim.js';
+import { createServerStatus } from './servers.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const dataDir = path.join(here, '..', 'data');
-const tabletDir = path.join(here, '..', '..', 'tablet');
+const repoRoot = path.join(here, '..', '..');
+const tabletDir = path.join(repoRoot, 'tablet');
+const serverStatus = createServerStatus(repoRoot);
 const readJson = file => JSON.parse(readFileSync(path.join(dataDir, file), 'utf8'));
 
 const settings = readJson('settings.json');
@@ -21,6 +24,7 @@ app.use(express.json());
 app.use('/tablet', express.static(tabletDir));
 app.get('/', (_req, res) => res.redirect('/tablet/'));
 app.get('/api/news', (_req, res) => res.json(readJson('news.json')));
+app.get('/api/servers', (_req, res) => res.json(serverStatus()));
 app.get('/api/server', (_req, res) => res.json({
   name: settings.serverName,
   cbRangeMeters: settings.cbRangeMeters,
