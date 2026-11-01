@@ -1,0 +1,16 @@
+[
+  {
+    "id": "welcome",
+    "date": "2026-11-01",
+    "title": "Welcome to Nick's Trucking Server",
+    "tag": "Announcement",
+    "body": "The hub is live. Nearby players, chat and CB radio are running with simulated drivers while the server is in testing."
+  },
+  {
+    "id": "server-online",
+    "date": "2026-10-31",
+    "title": "Main server online",
+    "tag": "Server",
+    "body": "The private dedicated server is installed and passed its first start on version 1.61."
+  }
+]

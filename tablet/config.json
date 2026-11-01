@@ -1,0 +1,29 @@
+{
+  "playerName": "Nick",
+  "brand": {
+    "name": "Nick's Trucking",
+    "short": "NTS"
+  },
+  "theme": {
+    "frame": "#15181d",
+    "frameEdge": "#2b3039",
+    "screen": "#0d1117",
+    "panel": "#161b22",
+    "panelRaised": "#1f2630",
+    "text": "#e6edf3",
+    "textMuted": "#8b96a3",
+    "accent": "#f2a33a",
+    "good": "#3fb950",
+    "warn": "#d29922",
+    "bad": "#f85149",
+    "radius": "14px",
+    "font": "'Segoe UI', system-ui, sans-serif",
+    "wallpaper": "linear-gradient(160deg, #1b2533 0%, #0d1117 55%, #2a1d0e 100%)"
+  },
+  "apps": [
+    { "id": "nearby", "label": "Nearby", "tint": "#f2a33a" },
+    { "id": "cb", "label": "CB Radio", "tint": "#3fb950" },
+    { "id": "chat", "label": "Chat", "tint": "#58a6ff" },
+    { "id": "news", "label": "News", "tint": "#bc8cff" }
+  ]
+}

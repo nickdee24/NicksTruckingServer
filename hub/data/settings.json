@@ -1,0 +1,11 @@
+{
+  "port": 7420,
+  "serverName": "Nick's Trucking Server",
+  "cbRangeMeters": 2500,
+  "nearbyRangeMeters": 5000,
+  "simulation": {
+    "enabled": true,
+    "bots": 6,
+    "simulateSelfWhenNoTelemetry": true
+  }
+}

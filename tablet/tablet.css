@@ -1,0 +1,158 @@
+/* Theme values come from config.json and are set as CSS variables by shell.js. */
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: transparent;
+  font-family: var(--font);
+  color: var(--text);
+}
+
+body {
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: #0a0c10;
+}
+
+/* Device frame */
+.tablet {
+  position: relative;
+  width: min(960px, 100%);
+  aspect-ratio: 16 / 10.5;
+  padding: 22px 64px 22px 22px;
+  background: var(--frame);
+  border: 2px solid var(--frame-edge);
+  border-radius: 34px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, .5);
+}
+
+.home-button {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  width: 26px;
+  height: 26px;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  border: 2px solid var(--frame-edge);
+  background: transparent;
+  cursor: pointer;
+}
+
+.screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--wallpaper), var(--screen);
+}
+
+/* Status bar */
+.statusbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  font-size: 13px;
+  background: rgba(0, 0, 0, .35);
+}
+.brand { font-weight: 700; color: var(--accent); letter-spacing: .04em; }
+.status { flex: 1; color: var(--text-muted); }
+.clock { font-variant-numeric: tabular-nums; }
+
+/* Home screen */
+.home { flex: 1; padding: 32px; }
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 28px 20px;
+}
+.app-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.app-icon .tile {
+  display: grid;
+  place-items: center;
+  width: 68px;
+  height: 68px;
+  border-radius: 18px;
+  background: var(--tint);
+  color: #0d1117;
+  transition: transform .12s;
+}
+.app-icon:hover .tile { transform: translateY(-3px); }
+.app-icon svg { width: 34px; height: 34px; }
+
+/* Open app */
+.app-view { flex: 1; display: flex; flex-direction: column; min-height: 0; background: var(--screen); }
+.app-view[hidden] { display: none; }
+.app-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--panel-raised);
+}
+.app-bar h1 { margin: 0; font-size: 17px; }
+.back {
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+}
+.app-body { flex: 1; min-height: 0; overflow: auto; padding: 16px; }
+
+/* Shared app pieces */
+.card {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--panel);
+}
+.muted { color: var(--text-muted); }
+.pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  background: var(--panel-raised);
+  color: var(--text-muted);
+}
+.pill.good { background: color-mix(in srgb, var(--good) 22%, transparent); color: var(--good); }
+.pill.accent { background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--accent); }
+.list { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.composer { display: flex; gap: 8px; padding-top: 12px; }
+.composer input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--panel-raised);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+}
+.composer button, .btn {
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #0d1117;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}

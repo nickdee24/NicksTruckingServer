@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trucking Tablet</title>
+  <link rel="stylesheet" href="tablet.css">
+</head>
+<body>
+  <div class="tablet" id="tablet">
+    <div class="screen">
+      <header class="statusbar">
+        <span class="brand" id="brand"></span>
+        <span class="status" id="status">Connecting…</span>
+        <span class="clock" id="clock"></span>
+      </header>
+      <main class="home" id="home">
+        <div class="app-grid" id="app-grid"></div>
+      </main>
+      <section class="app-view" id="app-view" hidden>
+        <div class="app-bar">
+          <button class="back" id="back" aria-label="Back to home">‹ Home</button>
+          <h1 id="app-title"></h1>
+        </div>
+        <div class="app-body" id="app-body"></div>
+      </section>
+    </div>
+    <button class="home-button" id="home-button" aria-label="Home"></button>
+  </div>
+  <script type="module" src="shell.js"></script>
+</body>
+</html>

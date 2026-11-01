@@ -1,0 +1,15 @@
+{
+  "name": "trucking-hub",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Hub service for Nick's Trucking Server: news, players, chat and CB radio",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "ws": "^8.18.0"
+  }
+}
