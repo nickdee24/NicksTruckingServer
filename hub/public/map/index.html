@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Live Map</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+  <link rel="stylesheet" href="map.css">
+</head>
+<body>
+  <aside class="panel">
+    <header>
+      <span class="mark" id="mark"></span>
+      <div>
+        <h1 id="title">Live map</h1>
+        <p class="muted" id="summary">Connecting…</p>
+      </div>
+    </header>
+    <label class="toggle"><input type="checkbox" id="follow" checked> Follow <span id="follow-name"></span></label>
+    <label class="toggle"><input type="checkbox" id="show-bots" checked> Show simulated drivers</label>
+    <h2>Traffic</h2>
+    <ul class="list" id="incidents"></ul>
+    <h2>Drivers</h2>
+    <ul class="list" id="drivers"></ul>
+    <p class="muted note">Roads appear as you drive them. City names are added when you pick up or deliver a job.</p>
+  </aside>
+  <div id="map"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+  <script type="module" src="map.js"></script>
+</body>
+</html>

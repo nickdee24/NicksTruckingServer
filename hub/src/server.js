@@ -1,6 +1,6 @@
 import express from 'express';
 import { createServer } from 'node:http';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { createSocket } from 'node:dgram';
@@ -8,6 +8,8 @@ import { WebSocketServer } from 'ws';
 import { createSimulation } from './sim.js';
 import { createServerStatus } from './servers.js';
 import { createModpack } from './modpack.js';
+import { createTraffic, INCIDENT_TYPES } from './traffic.js';
+import { createRoads } from './roads.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const dataDir = path.join(here, '..', 'data');
@@ -27,6 +29,8 @@ app.use(express.json());
 app.use((_req, res, next) => { res.set('Access-Control-Allow-Origin', '*'); next(); });
 app.use('/tablet', express.static(tabletDir));
 app.use('/mods', express.static(modpack.packDir));
+app.use('/map', express.static(path.join(here, '..', 'public', 'map')));
+app.use('/admin', express.static(path.join(here, '..', 'public', 'admin')));
 app.get('/api/modpack', async (_req, res, next) => {
   try { res.json(await modpack.manifest()); } catch (err) { next(err); }
 });
@@ -50,7 +54,45 @@ const chatHistory = [];
 let nextId = 1;
 
 const send = (ws, msg) => ws.readyState === ws.OPEN && ws.send(JSON.stringify(msg));
+const broadcast = msg => clients.forEach(c => send(c.ws, msg));
 const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
+
+const traffic = createTraffic({
+  file: path.join(dataDir, 'incidents.json'),
+  onChange: items => broadcast({ type: 'incidents', items })
+});
+const roads = createRoads({ file: path.join(dataDir, 'roads.json') });
+
+// Admin endpoints only answer requests made on this PC.
+const localOnly = (req, res, next) => {
+  const ip = req.socket.remoteAddress;
+  if (ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1') return next();
+  res.status(403).json({ error: 'Admin is only available on the server PC' });
+};
+
+app.get('/api/incidents', (_req, res) => res.json({ types: INCIDENT_TYPES, items: traffic.list() }));
+app.get('/api/roads', (_req, res) => res.json(roads.get()));
+app.post('/api/admin/incidents', localOnly, (req, res) => {
+  const { type, x, z, note, minutes } = req.body ?? {};
+  const added = traffic.add({ type, x: Number(x), z: Number(z), note, minutes: minutes === undefined ? undefined : Number(minutes), source: 'admin' });
+  added ? res.json(added) : res.status(400).json({ error: 'Need a known type and a position' });
+});
+app.delete('/api/admin/incidents/:id', localOnly, (req, res) => { traffic.remove(req.params.id); res.json({ ok: true }); });
+app.post('/api/admin/news', localOnly, (req, res) => {
+  const { title, body, tag } = req.body ?? {};
+  if (!title || !body) return res.status(400).json({ error: 'Need a title and body' });
+  const news = readJson('news.json');
+  const item = { id: String(Date.now()), date: new Date().toISOString().slice(0, 10), title: String(title), tag: String(tag || 'News'), body: String(body) };
+  news.unshift(item);
+  writeFileSync(path.join(dataDir, 'news.json'), JSON.stringify(news, null, 2));
+  broadcast({ type: 'news', item });
+  res.json(item);
+});
+app.delete('/api/admin/news/:id', localOnly, (req, res) => {
+  const news = readJson('news.json').filter(n => n.id !== req.params.id);
+  writeFileSync(path.join(dataDir, 'news.json'), JSON.stringify(news, null, 2));
+  res.json({ ok: true });
+});
 
 // Live telemetry from the game plugin (UDP), keyed by lower-cased player name.
 const telemetry = new Map();
@@ -64,6 +106,10 @@ udp.on('message', raw => {
   try { msg = JSON.parse(raw); } catch { return; }
   if (msg.type !== 'telemetry' || !msg.name) return;
   const name = String(msg.name).slice(0, 32);
+  const prev = telemetry.get(name.toLowerCase());
+  // A new job starts where the truck is; a finished job ended at its destination.
+  if (msg.from && msg.from !== prev?.from) roads.noteCity(msg.from, Number(msg.x), Number(msg.z));
+  if (prev?.to && !msg.cargo && prev.cargo) roads.noteCity(prev.to, Number(msg.x), Number(msg.z));
   telemetry.set(name.toLowerCase(), {
     id: `t-${name.toLowerCase()}`, name,
     x: Number(msg.x), z: Number(msg.z), heading: Number(msg.heading) || 0,
@@ -78,6 +124,7 @@ udp.on('message', raw => {
 // Where a client's player is: real telemetry if it is fresh, otherwise the simulated self.
 function positionOf(client) {
   const p = client.player;
+  if (p.spectator) return null;
   const t = freshTelemetry(p.name);
   if (t) return { ...t, id: p.id };
   if (p.lastTelemetry && Date.now() - p.lastTelemetry < TELEMETRY_TIMEOUT_MS) return p;
@@ -128,6 +175,7 @@ wss.on('connection', ws => {
   const client = { ws, player: { id: `p-${nextId++}`, name: 'Driver', cbChannel: DEFAULT_CB_CHANNEL } };
   clients.add(client);
   send(ws, { type: 'welcome', id: client.player.id, server: settings.serverName, chat: chatHistory });
+  send(ws, { type: 'incidents', items: traffic.list() });
 
   ws.on('message', raw => {
     let msg;
@@ -136,7 +184,14 @@ wss.on('connection', ws => {
     switch (msg.type) {
       case 'hello':
         p.name = String(msg.name || 'Driver').slice(0, 32);
+        // The live map watches without being a driver.
+        p.spectator = msg.role === 'map';
         break;
+      case 'report': {
+        const me = positionOf(client);
+        if (me) traffic.add({ type: msg.incidentType, x: me.x, z: me.z, note: msg.note, source: 'player', reporter: p.name });
+        break;
+      }
       case 'telemetry':
         Object.assign(p, {
           x: Number(msg.x), z: Number(msg.z), heading: Number(msg.heading) || 0,
@@ -170,7 +225,16 @@ wss.on('connection', ws => {
 // Every second, send each client the drivers around them, nearest first.
 setInterval(() => {
   const drivers = allDrivers();
+  traffic.observe(drivers);
+  drivers.forEach(roads.record);
+
+  const world = drivers.map(d => ({
+    id: d.id, name: d.name, x: Math.round(d.x), z: Math.round(d.z), heading: d.heading,
+    speedKmh: d.speedKmh, truck: d.truck, cargo: d.cargo, to: d.to, isBot: !!d.isBot, simulated: !!d.simulated
+  }));
+
   clients.forEach(c => {
+    if (c.player.spectator) return send(c.ws, { type: 'world', drivers: world });
     const me = positionOf(c);
     const others = drivers
       .filter(d => d.name.toLowerCase() !== c.player.name.toLowerCase())
@@ -193,6 +257,15 @@ setInterval(() => {
     });
   });
 }, 1000);
+
+// The simulation makes up the odd incident near its drivers, so reports can be seen solo.
+if (sim) {
+  setInterval(() => {
+    const d = sim.drivers[Math.floor(Math.random() * sim.drivers.length)];
+    const types = ['accident', 'jam', 'roadworks', 'police', 'slow'];
+    traffic.add({ type: types[Math.floor(Math.random() * types.length)], x: d.x, z: d.z, note: `Reported by ${d.name}`, source: 'sim', reporter: d.name, minutes: 5 });
+  }, settings.simulation.incidentEverySeconds * 1000);
+}
 
 udp.bind(settings.telemetryPort, () => console.log(`Listening for game telemetry on udp ${settings.telemetryPort}`));
 

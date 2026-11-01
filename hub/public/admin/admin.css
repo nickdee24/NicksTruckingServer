@@ -1,0 +1,26 @@
+body { display: block; overflow: auto; }
+main { max-width: 900px; margin: 0 auto; padding: 24px 16px 48px; }
+h1 { margin: 0 0 4px; }
+.card { margin-top: 20px; padding: 16px; border-radius: 12px; background: var(--panel); }
+.card h2 { margin: 0 0 12px; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); }
+.small { font-size: 12px; }
+form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; }
+.row > * { flex: 1 1 120px; }
+input, select, textarea {
+  padding: 9px 10px; border: 1px solid var(--panel-raised); border-radius: 8px;
+  background: var(--screen); color: var(--text); font: inherit;
+}
+button {
+  align-self: flex-start; padding: 9px 18px; border: 0; border-radius: 8px;
+  background: var(--accent); color: #0d1117; font: inherit; font-weight: 600; cursor: pointer;
+}
+.list li { display: flex; align-items: center; gap: 12px; cursor: default; }
+.list li > div { flex: 1; }
+.list li button { padding: 4px 10px; background: var(--panel); color: var(--bad); }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 8px; text-align: left; border-bottom: 1px solid var(--panel-raised); }
+th { color: var(--text-muted); font-weight: 600; font-size: 12px; }
+.on { color: var(--good); }
+.off { color: var(--bad); }
+code { background: var(--panel-raised); padding: 1px 5px; border-radius: 4px; }

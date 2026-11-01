@@ -1,0 +1,54 @@
+:root {
+  --screen: #0d1117;
+  --panel: #161b22;
+  --panel-raised: #1f2630;
+  --text: #e6edf3;
+  --text-muted: #8b96a3;
+  --accent: #f2a33a;
+  --good: #3fb950;
+  --warn: #d29922;
+  --bad: #f85149;
+  --font: 'Segoe UI', system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { display: flex; background: var(--screen); color: var(--text); font-family: var(--font); font-size: 14px; }
+.muted { color: var(--text-muted); }
+
+.panel { width: 320px; flex: none; overflow: auto; padding: 16px; background: var(--panel); }
+.panel header { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
+.panel h1 { margin: 0; font-size: 18px; }
+.panel p { margin: 2px 0 0; font-size: 12px; }
+.panel h2 { margin: 18px 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); }
+.mark {
+  display: grid; place-items: center; width: 38px; height: 38px; flex: none;
+  border: 2px solid var(--accent); border-radius: 10px; color: var(--accent); font-size: 12px; font-weight: 800;
+}
+.toggle { display: flex; align-items: center; gap: 8px; margin: 6px 0; color: var(--text-muted); }
+.list { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.list li { padding: 8px 10px; border-radius: 8px; background: var(--panel-raised); cursor: pointer; }
+.list li small { display: block; color: var(--text-muted); }
+.list .empty { cursor: default; color: var(--text-muted); background: none; padding: 0; }
+.note { font-size: 12px; margin-top: 18px; }
+
+#map { flex: 1; background: #0a0d12; }
+.leaflet-container { font-family: var(--font); }
+
+/* Map markers */
+.truck { display: grid; place-items: center; }
+.truck svg { filter: drop-shadow(0 1px 2px #000); }
+.truck-label {
+  position: absolute; left: 18px; top: -4px; white-space: nowrap;
+  padding: 1px 6px; border-radius: 4px; background: rgba(13, 17, 23, .8); color: var(--text); font-size: 11px;
+}
+.incident {
+  display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%;
+  border: 2px solid #fff; color: #fff; font-size: 13px; font-weight: 800; box-shadow: 0 1px 4px #000;
+}
+.city-label { color: var(--text-muted); font-size: 11px; font-weight: 600; text-shadow: 0 1px 2px #000; white-space: nowrap; }
+.leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--panel); color: var(--text); }
+
+@media (max-width: 700px) {
+  body { flex-direction: column-reverse; }
+  .panel { width: auto; height: 40%; }
+}

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Server Admin</title>
+  <link rel="stylesheet" href="../map/map.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <main>
+    <h1>Server admin</h1>
+    <p class="muted">Only works on the server PC. Changes go live to every launcher, tablet and map straight away.</p>
+
+    <section class="card">
+      <h2>Servers</h2>
+      <table id="servers"><thead><tr><th>Server</th><th>Status</th><th>Drivers</th><th>Session id</th></tr></thead><tbody></tbody></table>
+      <p class="muted small">Start and stop servers with <code>server\scripts\start-server.ps1</code> and <code>stop-server.ps1</code>.</p>
+    </section>
+
+    <section class="card">
+      <h2>Post news</h2>
+      <form id="news-form">
+        <div class="row">
+          <input name="title" placeholder="Headline" required maxlength="100">
+          <select name="tag"><option>News</option><option>Announcement</option><option>Event</option><option>Update</option><option>Server</option></select>
+        </div>
+        <textarea name="body" placeholder="What's happening?" required rows="3"></textarea>
+        <button>Post</button>
+      </form>
+      <ul class="list" id="news"></ul>
+    </section>
+
+    <section class="card">
+      <h2>Add a traffic incident</h2>
+      <form id="incident-form">
+        <div class="row">
+          <select name="type" id="types"></select>
+          <select name="at" id="at"><option value="">At a position…</option></select>
+          <input name="x" placeholder="x" type="number">
+          <input name="z" placeholder="z" type="number">
+          <input name="minutes" placeholder="Minutes" type="number" min="1" value="30">
+        </div>
+        <input name="note" placeholder="Note shown to drivers (optional)" maxlength="200">
+        <button>Add incident</button>
+      </form>
+      <ul class="list" id="incidents"></ul>
+    </section>
+  </main>
+  <script type="module" src="admin.js"></script>
+</body>
+</html>
