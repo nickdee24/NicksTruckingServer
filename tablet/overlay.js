@@ -95,6 +95,22 @@ function showNotice(state, text) {
   $('notice').hidden = false;
 }
 
+// Speed limit for the area you're in, if it has one.
+function showSpeedLimit(limit) {
+  $('speed-box').hidden = !limit;
+  $('speed-box').classList.remove('over');
+  $('speed-sign').textContent = limit ?? '';
+  $('speed-label').textContent = 'Speed limit';
+  $('speed-text').textContent = limit ? `${limit} km/h in this area` : '';
+}
+hub.on('zone', ({ speedLimit }) => showSpeedLimit(speedLimit));
+hub.on('speeding', ({ over, limit, speedKmh }) => {
+  if (!limit) return;
+  $('speed-box').classList.toggle('over', over);
+  $('speed-label').textContent = over ? 'Slow down' : 'Speed limit';
+  $('speed-text').textContent = over ? `${speedKmh} km/h in a ${limit} km/h area` : `${limit} km/h in this area`;
+});
+
 hub.on('zone', ({ zone, notice }) => {
   const collisionZone = zone && (zone.kind === 'service' || zone.kind === 'depot');
   if (notice) {

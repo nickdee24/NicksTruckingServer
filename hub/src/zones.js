@@ -6,7 +6,8 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 export const ZONE_KINDS = {
   service: { label: 'Truck stop / fuel station', radius: 150 },
   depot: { label: 'Company depot', radius: 180 },
-  custom: { label: 'Custom area', radius: 200 }
+  custom: { label: 'Custom area', radius: 200 },
+  speed: { label: 'Speed limit area', radius: 300 }
 };
 
 const EXIT_MARGIN_M = 40; // leave a little past the edge, so the notice doesn't flicker at the boundary
@@ -20,7 +21,7 @@ export function createZones({ file, onChange }) {
   const save = () => { writeFileSync(file, JSON.stringify(zones, null, 2)); onChange?.(zones); };
   const list = () => zones;
 
-  function add({ kind, x, z, name, radius, message, source = 'admin' }) {
+  function add({ kind, x, z, name, radius, message, speedLimit, source = 'admin' }) {
     if (!ZONE_KINDS[kind] || !Number.isFinite(x) || !Number.isFinite(z)) return null;
     const r = Number(radius) || ZONE_KINDS[kind].radius;
     // Learned zones that overlap an existing one of the same kind are the same place.
@@ -32,7 +33,8 @@ export function createZones({ file, onChange }) {
     const zone = {
       id: String(nextId++), kind, name: name ? String(name).slice(0, 60) : '',
       x: Math.round(x), z: Math.round(z), radius: r,
-      message: message ? String(message).slice(0, 120) : null, source
+      message: message ? String(message).slice(0, 120) : null,
+      speedLimit: Number(speedLimit) > 0 ? Number(speedLimit) : null, source
     };
     zones.push(zone);
     save();
@@ -44,6 +46,7 @@ export function createZones({ file, onChange }) {
     if (!zone) return null;
     for (const key of ['name', 'message']) if (key in changes) zone[key] = changes[key] ? String(changes[key]).slice(0, 120) : null;
     if ('radius' in changes && Number(changes.radius) > 0) zone.radius = Number(changes.radius);
+    if ('speedLimit' in changes) zone.speedLimit = Number(changes.speedLimit) > 0 ? Number(changes.speedLimit) : null;
     save();
     return zone;
   }

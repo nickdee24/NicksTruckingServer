@@ -11,3 +11,4 @@ hub/data/roads.json
 hub/data/incidents.json
 hub/data/zones.json
 hub/public/map/tiles/
+hub/data/zone-rules.json

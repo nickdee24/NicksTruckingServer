@@ -20,7 +20,7 @@ if (-not (Test-Path "$nj\lib\net45\Newtonsoft.Json.dll")) {
 
 $bin = Join-Path $tsmap 'TsMap\bin\x64\Release'
 $exe = Join-Path $bin 'TileExport.exe'
-& $csc /nologo /platform:x64 /optimize /out:$exe /r:"$bin\TsMap.dll" /r:System.Drawing.dll "$PSScriptRoot\TileExport.cs" | Out-Host
+& $csc /nologo /platform:x64 /optimize /out:$exe /r:"$bin\TsMap.dll" /r:"$bin\Newtonsoft.Json.dll" /r:System.Drawing.dll "$PSScriptRoot\TileExport.cs" | Out-Host
 
 $gameDir = 'D:\SteamLibrary\steamapps\common\Euro Truck Simulator 2'
 # map-mods.txt lists the map mods to draw (ProMods). Edit it if your mods change.

@@ -23,4 +23,16 @@ th, td { padding: 8px; text-align: left; border-bottom: 1px solid var(--panel-ra
 th { color: var(--text-muted); font-weight: 600; font-size: 12px; }
 .on { color: var(--good); }
 .off { color: var(--bad); }
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.rule-card { display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 10px; background: var(--panel-raised); }
+.rule-card h3 { margin: 0 0 4px; font-size: 16px; display: flex; justify-content: space-between; }
+.rule-card label { display: flex; align-items: center; gap: 8px; }
+.rule-card .num { justify-content: space-between; }
+.rule-card .num input { width: 70px; padding: 5px 8px; }
+.rule-card .actions { display: flex; gap: 8px; margin-top: 6px; }
+.rule-card .actions button { padding: 7px 12px; }
+.rule-card .actions .secondary { background: var(--panel); color: var(--text); }
+.rule-card .status { font-size: 12px; color: var(--text-muted); min-height: 16px; }
+.row label { display: flex; flex-direction: column; gap: 4px; }
+.list li input.speed { width: 90px; flex: none; }
 code { background: var(--panel-raised); padding: 1px 5px; border-radius: 4px; }

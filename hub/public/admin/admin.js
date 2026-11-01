@@ -50,6 +50,84 @@ async function loadIncidents() {
   )));
 }
 
+// Server rules: one card per server with the settings Convoy enforces.
+const RULES = [
+  ['traffic', 'AI traffic'],
+  ['playerDamage', 'Damage from crashing into players'],
+  ['serviceNoCollision', 'No collisions at truck stops / fuel stations'],
+  ['hideInCompany', 'Hide other players in company depots'],
+  ['forceSpeedLimiter', 'Force the truck speed limiter on']
+];
+
+async function loadRules() {
+  const servers = await api('/api/admin/server-rules');
+  $('rules').replaceChildren(...servers.map(s => {
+    const card = document.createElement('div');
+    card.className = 'rule-card';
+    card.innerHTML = '<h3><span></span><small class="muted"></small></h3>';
+    card.querySelector('h3 span').textContent = s.id[0].toUpperCase() + s.id.slice(1);
+    card.querySelector('h3 small').textContent = s.lobbyName;
+    for (const [key, label] of RULES) {
+      const l = document.createElement('label');
+      l.innerHTML = '<input type="checkbox"><span></span>';
+      l.firstChild.checked = !!s[key];
+      l.firstChild.dataset.key = key;
+      l.lastChild.textContent = label;
+      card.append(l);
+    }
+    const max = document.createElement('label');
+    max.className = 'num';
+    max.innerHTML = '<span>Max players</span><input type="number" min="1" max="8">';
+    max.querySelector('input').value = s.maxPlayers;
+    card.append(max);
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    actions.innerHTML = '<button class="secondary">Save</button><button>Apply &amp; restart</button>';
+    const status = document.createElement('div');
+    status.className = 'status';
+    card.append(actions, status);
+
+    const save = () => {
+      const body = { maxPlayers: max.querySelector('input').value };
+      card.querySelectorAll('[data-key]').forEach(cb => { body[cb.dataset.key] = cb.checked; });
+      return api(`/api/admin/server-rules/${s.id}`, { method: 'PATCH', body });
+    };
+    actions.children[0].onclick = async () => { await save(); status.textContent = 'Saved. Restart the server to apply.'; };
+    actions.children[1].onclick = async () => {
+      if (!confirm(`Restart the ${s.id} server? Anyone on it will be disconnected.`)) return;
+      status.textContent = 'Restarting…';
+      try {
+        await save();
+        await api(`/api/admin/server-rules/${s.id}/restart`, { method: 'POST' });
+        status.textContent = 'Restarted with the new rules.';
+        loadServers();
+      } catch (err) { status.textContent = err.message; }
+    };
+    return card;
+  }));
+}
+
+async function loadAreaRules() {
+  const { rules, speeding } = await api('/api/admin/zone-rules');
+  const f = $('area-form');
+  f.service.value = rules.service?.speedLimit ?? '';
+  f.depot.value = rules.depot?.speedLimit ?? '';
+  $('speeding').replaceChildren(...(speeding.length ? speeding.map(s => {
+    const li = document.createElement('li');
+    li.innerHTML = '<div><span></span><small></small></div>';
+    li.querySelector('span').textContent = `${s.driver}: ${s.speedKmh} km/h in a ${s.limit} km/h area`;
+    li.querySelector('small').textContent = `${s.zone ?? ''} · ${new Date(s.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    return li;
+  }) : [Object.assign(document.createElement('li'), { className: 'empty', textContent: 'No speeding reported.' })]));
+}
+
+$('area-form').onsubmit = async e => {
+  e.preventDefault();
+  const f = e.target;
+  await api('/api/admin/zone-rules', { method: 'PUT', body: { service: { speedLimit: f.service.value }, depot: { speedLimit: f.depot.value } } });
+  loadAreaRules();
+};
+
 async function loadZones() {
   const { kinds, items } = await api('/api/zones');
   if (!$('zone-kinds').options.length) {
@@ -66,6 +144,14 @@ async function loadZones() {
     input.value = zn.message ?? '';
     input.onchange = () => api(`/api/admin/zones/${zn.id}`, { method: 'PATCH', body: { message: input.value } });
     li.insertBefore(input, li.querySelector('button'));
+    const speed = document.createElement('input');
+    speed.type = 'number';
+    speed.className = 'speed';
+    speed.placeholder = 'km/h';
+    speed.title = 'Speed limit in this zone';
+    speed.value = zn.speedLimit ?? '';
+    speed.onchange = () => api(`/api/admin/zones/${zn.id}`, { method: 'PATCH', body: { speedLimit: speed.value } });
+    li.insertBefore(speed, li.querySelector('button'));
     return li;
   }));
 }
@@ -76,7 +162,7 @@ $('zone-form').onsubmit = async e => {
   const [x, z] = f.at.value.split(',');
   if (!x) return alert('Pick a driver to place the zone at.');
   try {
-    await api('/api/admin/zones', { method: 'POST', body: { kind: f.kind.value, x, z, name: f.name.value, radius: f.radius.value || undefined, message: f.message.value } });
+    await api('/api/admin/zones', { method: 'POST', body: { kind: f.kind.value, x, z, name: f.name.value, radius: f.radius.value || undefined, message: f.message.value, speedLimit: f.speedLimit.value } });
     f.name.value = f.message.value = '';
     loadZones();
   } catch (err) { alert(err.message); }
@@ -151,5 +237,8 @@ loadServers();
 loadNews();
 loadIncidents();
 loadZones();
+loadRules();
+loadAreaRules();
 watchDrivers();
+setInterval(loadAreaRules, 15000);
 setInterval(loadServers, 10000);

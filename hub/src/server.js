@@ -4,6 +4,7 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { createSocket } from 'node:dgram';
+import { execFile } from 'node:child_process';
 import { WebSocketServer } from 'ws';
 import { createSimulation } from './sim.js';
 import { createServerStatus } from './servers.js';
@@ -90,8 +91,8 @@ function zoneNotice(zone, serverId) {
 
 app.get('/api/zones', (_req, res) => res.json({ kinds: ZONE_KINDS, items: zones.list() }));
 app.post('/api/admin/zones', localOnly, (req, res) => {
-  const { kind, x, z, name, radius, message } = req.body ?? {};
-  const zone = zones.add({ kind, x: Number(x), z: Number(z), name, radius, message, source: 'admin' });
+  const { kind, x, z, name, radius, message, speedLimit } = req.body ?? {};
+  const zone = zones.add({ kind, x: Number(x), z: Number(z), name, radius, message, speedLimit, source: 'admin' });
   zone ? res.json(zone) : res.status(400).json({ error: 'Need a known kind and a position' });
 });
 app.patch('/api/admin/zones/:id', localOnly, (req, res) => {
@@ -99,6 +100,64 @@ app.patch('/api/admin/zones/:id', localOnly, (req, res) => {
   zone ? res.json(zone) : res.status(404).json({ error: 'No such zone' });
 });
 app.delete('/api/admin/zones/:id', localOnly, (req, res) => { zones.remove(req.params.id); res.json({ ok: true }); });
+
+// Speed limits for areas. The game can't be made to enforce them, so the overlay shows the limit,
+// warns when a driver is over it, and the admin page keeps a list of speeding reports.
+const zoneRulesFile = path.join(dataDir, 'zone-rules.json');
+let zoneRules = existsSync(zoneRulesFile) ? JSON.parse(readFileSync(zoneRulesFile, 'utf8')) : { service: { speedLimit: null }, depot: { speedLimit: null } };
+const zoneSpeedLimit = zone => zone ? (zone.speedLimit ?? zoneRules[zone.kind]?.speedLimit ?? null) : null;
+const SPEED_TOLERANCE_KMH = 5;
+const speedingLog = [];
+
+function checkSpeeding(client, me) {
+  const limit = zoneSpeedLimit(client.zone);
+  const over = !!limit && (me.speedKmh ?? 0) > limit + SPEED_TOLERANCE_KMH;
+  if (over === !!client.speeding) return;
+  client.speeding = !!over;
+  send(client.ws, { type: 'speeding', over: !!over, limit, speedKmh: me.speedKmh });
+  if (over) {
+    speedingLog.unshift({ ts: Date.now(), driver: client.player.name, speedKmh: me.speedKmh, limit, zone: client.zone.name || ZONE_KINDS[client.zone.kind]?.label });
+    speedingLog.length = Math.min(speedingLog.length, 100);
+  }
+}
+
+app.get('/api/admin/zone-rules', localOnly, (_req, res) => res.json({ rules: zoneRules, speeding: speedingLog }));
+app.put('/api/admin/zone-rules', localOnly, (req, res) => {
+  for (const kind of ['service', 'depot']) {
+    const limit = Number(req.body?.[kind]?.speedLimit);
+    zoneRules[kind] = { speedLimit: limit > 0 ? limit : null };
+  }
+  writeFileSync(zoneRulesFile, JSON.stringify(zoneRules, null, 2));
+  res.json(zoneRules);
+});
+
+// Server rules (server/config/server.json). Changes apply when that server restarts.
+const serverConfigFile = path.join(repoRoot, 'server', 'config', 'server.json');
+const RULE_KEYS = { traffic: 'boolean', playerDamage: 'boolean', serviceNoCollision: 'boolean', hideInCompany: 'boolean', forceSpeedLimiter: 'boolean', maxPlayers: 'number', tagline: 'string', welcome: 'string' };
+
+app.get('/api/admin/server-rules', localOnly, (_req, res) => res.json(JSON.parse(readFileSync(serverConfigFile, 'utf8')).servers));
+app.patch('/api/admin/server-rules/:id', localOnly, (req, res) => {
+  const cfg = JSON.parse(readFileSync(serverConfigFile, 'utf8'));
+  const server = cfg.servers.find(s => s.id === req.params.id);
+  if (!server) return res.status(404).json({ error: 'No such server' });
+  for (const [key, type] of Object.entries(RULE_KEYS)) {
+    if (!(key in (req.body ?? {}))) continue;
+    const v = req.body[key];
+    server[key] = type === 'boolean' ? !!v : type === 'number' ? Math.min(8, Math.max(1, Number(v) || 8)) : String(v).slice(0, 120);
+  }
+  writeFileSync(serverConfigFile, JSON.stringify(cfg, null, 2));
+  refreshServerInfo();
+  res.json(server);
+});
+app.post('/api/admin/server-rules/:id/restart', localOnly, (req, res) => {
+  const id = req.params.id.replace(/[^a-z0-9_-]/gi, '');
+  const scripts = path.join(repoRoot, 'server', 'scripts');
+  const cmd = `& '${scripts}\\setup-server.ps1' ${id}; & '${scripts}\\stop-server.ps1' ${id}; Start-Sleep 3; & '${scripts}\\start-server.ps1' ${id}`;
+  execFile('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', cmd], (err, stdout, stderr) => {
+    if (err) return res.status(500).json({ error: stderr || err.message });
+    res.json({ ok: true, output: stdout });
+  });
+});
 
 // Admin endpoints only answer requests made on this PC.
 function localOnly(req, res, next) {
@@ -321,9 +380,12 @@ setInterval(() => {
     if (me) {
       const change = zones.check({ ...me, name: `${c.player.id}` });
       if (change) {
+        c.zone = change.zone;
         const notice = zoneNotice(change.zone, c.player.server);
-        send(c.ws, { type: 'zone', zone: change.zone && { id: change.zone.id, kind: change.zone.kind, name: change.zone.name }, notice });
+        const speedLimit = zoneSpeedLimit(change.zone);
+        send(c.ws, { type: 'zone', zone: change.zone && { id: change.zone.id, kind: change.zone.kind, name: change.zone.name }, notice, speedLimit });
       }
+      checkSpeeding(c, me);
     }
     const others = drivers
       .filter(d => d.name.toLowerCase() !== c.player.name.toLowerCase())

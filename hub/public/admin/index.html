@@ -19,6 +19,26 @@
     </section>
 
     <section class="card">
+      <h2>Server rules</h2>
+      <p class="muted small">These are settings ETS2's Convoy server enforces itself. Save, then press Apply &amp; restart. Anyone on that server is disconnected while it restarts.</p>
+      <div class="rules" id="rules"></div>
+    </section>
+
+    <section class="card">
+      <h2>Area rules</h2>
+      <p class="muted small">Speed limits for areas. The game can't force these, so drivers see the limit in their overlay and get a warning when they're over it; it's also logged below. Set a limit on a single zone to override these.</p>
+      <form id="area-form">
+        <div class="row">
+          <label class="small muted">Truck stops / fuel stations (km/h)<input name="service" type="number" min="5" max="130" placeholder="No limit"></label>
+          <label class="small muted">Company depots (km/h)<input name="depot" type="number" min="5" max="130" placeholder="No limit"></label>
+        </div>
+        <button>Save area rules</button>
+      </form>
+      <h2 style="margin-top:18px">Speeding reports</h2>
+      <ul class="list" id="speeding"></ul>
+    </section>
+
+    <section class="card">
       <h2>In-game announcement</h2>
       <form id="announce-form">
         <div class="row">
@@ -54,6 +74,7 @@
           <select name="at" id="zone-at"><option value="">At a driver…</option></select>
           <input name="name" placeholder="Name (optional)" maxlength="60">
           <input name="radius" type="number" min="20" placeholder="Radius m">
+          <input name="speedLimit" type="number" min="5" max="130" placeholder="Speed limit km/h">
         </div>
         <input name="message" placeholder="Notice (optional), e.g. Collisions are off in this area" maxlength="120">
         <button>Add zone</button>

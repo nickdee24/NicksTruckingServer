@@ -84,6 +84,36 @@ body.editing .feed li { animation: none; }
 .notice-icon svg { width: 24px; height: 24px; }
 .notice small { display: block; color: var(--text-muted, #8b96a3); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
 .top-stack.strip .notice { margin-top: 8px; }
+
+/* Area speed limit: a road-sign style box; turns red while you're over it. */
+.speed-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 18px 8px 8px;
+  border: 1px solid var(--line, #2f3540);
+  border-radius: 12px;
+  background: rgba(13, 17, 23, .88);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .45);
+  font-size: 15px;
+  animation: drop .35s ease-out both;
+}
+.speed-box[hidden] { display: none; }
+.speed-sign {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 5px solid #e5534b;
+  border-radius: 50%;
+  background: #fff;
+  color: #111;
+  font-weight: 800;
+  font-size: 15px;
+}
+.speed-box small { display: block; color: var(--text-muted, #8b96a3); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+.speed-box.over { border-color: var(--bad, #f85149); background: rgba(90, 20, 20, .9); animation: drop .35s ease-out both, pulse 1s ease-in-out infinite; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 4px rgba(248, 81, 73, .35); } }
 .announcement {
   display: flex;
   gap: 14px;
