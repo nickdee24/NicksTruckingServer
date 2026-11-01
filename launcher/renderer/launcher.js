@@ -288,7 +288,7 @@ $('check-telemetry').onclick = async () => {
     const live = t.seen && t.secondsAgo < 10;
     $('tele-dot').className = 'dot ' + (live ? 'on' : 'off');
     $('tele-state').textContent = live
-      ? `Working: the hub is receiving your truck${t.truck ? ` (${t.truck})` : ''}.`
+      ? `Working: the hub is receiving your truck${t.truck ? ` (${t.truck})` : ''} at ${Math.round(t.x)}, ${Math.round(t.z)}${t.paused ? ', game paused' : ''}.`
       : t.seen ? `Last heard ${t.secondsAgo} seconds ago. Is the game running and unpaused?` : 'Nothing received yet. Start the game with Play and drive for a moment.';
   } catch {
     $('tele-state').textContent = 'The hub is not reachable.';

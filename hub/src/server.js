@@ -222,7 +222,10 @@ const freshTelemetry = name => {
 // Lets the launcher's Settings page check that the game plugin is reaching the hub.
 app.get('/api/telemetry/:name', (req, res) => {
   const t = telemetry.get(req.params.name.toLowerCase());
-  res.json({ seen: !!t, secondsAgo: t ? Math.round((Date.now() - t.lastTelemetry) / 1000) : null, truck: t?.truck ?? null });
+  res.json({
+    seen: !!t, secondsAgo: t ? Math.round((Date.now() - t.lastTelemetry) / 1000) : null, truck: t?.truck ?? null,
+    x: t?.x ?? null, z: t?.z ?? null, speedKmh: t?.speedKmh ?? null, paused: t?.paused ?? null
+  });
 });
 
 udp.on('message', raw => {
